@@ -1,0 +1,31 @@
+FROM python:3.9-slim-bookworm AS base
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libedgetpu1-std \
+        libatlas-base-dev \
+        libopenblas0 \
+        v4l-utils \
+        can-utils \
+        libgomp1 \
+        libi2c-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir -r /requirements.txt
+
+FROM base AS runtime
+COPY . /app
+WORKDIR /app
+RUN useradd -m evuser && chown -R evuser:evuser /app && chown -R evuser:evuser /models /config || true
+USER evuser
+EXPOSE 5000-5003/tcp
+# Lightweight python-based healthcheck to avoid requiring curl in runtime image
+HEALTHCHECK --interval=30s --timeout=10s CMD python -c "import sys,urllib.request; \
+try:\
+    r=urllib.request.urlopen('http://localhost:5000/health', timeout=5); \
+    code=r.getcode(); sys.exit(0 if code==200 else 1)\
+except Exception:\
+    sys.exit(1)"
+# Use the orchestrator as the container entrypoint for full-system runs
+ENTRYPOINT ["python3", "main.py"]
+CMD ["--config", "/config/default_config.yaml", "--mode", "prod"]

@@ -1,0 +1,11 @@
+FROM nvcr.io/nvidia/l4t-tensorflow:r36.4.0-runtime-py3
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt || true
+
+COPY . /app
+WORKDIR /app
+USER 1000
+EXPOSE 5000-5003
+HEALTHCHECK CMD curl -f http://localhost:5000/status || exit 1
+ENTRYPOINT ["python", "-m", "scripts.run_inference"]

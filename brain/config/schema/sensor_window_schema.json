@@ -1,0 +1,227 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Sensor Window Schema",
+  "type": "object",
+  "required": ["timestamp", "vehicle_hash", "gps", "imu", "driver_fatigue", "vehicle_controls"],
+  "properties": {
+    "timestamp": {"type": "string", "format": "date-time", "description": "ISO 8601 timestamp"},
+    "vehicle_hash": {"type": "string", "description": "Anonymized vehicle identifier"},
+    "trip_id": {"type": "string"},
+    "window_id": {"type": "string"},
+    "gps": {
+      "oneOf": [
+        {"type": "object"},
+        {"type": "array", "items": {"type": "object"}}
+      ],
+      "description": "Either a single latest GPS object (legacy) or a list of timestamped GPS samples"
+    },
+    "imu": {
+      "oneOf": [
+        {"type": "object"},
+        {"type": "array", "items": {"type": "object"}}
+      ],
+      "description": "Either a single IMU sample or a list of IMU samples"
+    },
+    "vehicle_controls": {
+      "oneOf": [
+        {"type": "object"},
+        {"type": "array", "items": {"type": "object"}}
+      ],
+      "description": "Either a single vehicle controls snapshot or a list of samples"
+    },
+    "driver_fatigue": {
+      "oneOf": [
+        {"type": "object"},
+        {"type": "array", "items": {"type": "object"}}
+      ],
+      "description": "Either a single driver fatigue snapshot or a list of samples"
+    },
+    "driver_fatigue_features": {
+      "type": "object",
+      "description": "Computed features from driver fatigue samples (rolling stats, sudden changes, trends)",
+      "properties": {
+        "drowsiness_score_mean": {"type": "number", "minimum": 0, "maximum": 1},
+        "drowsiness_score_std": {"type": "number", "minimum": 0},
+        "drowsiness_score_min": {"type": "number", "minimum": 0, "maximum": 1},
+        "drowsiness_score_max": {"type": "number", "minimum": 0, "maximum": 1},
+        "blink_rate_mean": {"type": "number", "minimum": 0},
+        "blink_rate_std": {"type": "number", "minimum": 0},
+        "blink_rate_min": {"type": "number"},
+        "blink_rate_max": {"type": "number"},
+        "perclos_mean": {"type": "number", "minimum": 0, "maximum": 1},
+        "perclos_std": {"type": "number", "minimum": 0},
+        "perclos_min": {"type": "number"},
+        "perclos_max": {"type": "number"},
+        "sudden_drowsiness_increase": {"type": "boolean"},
+  "max_drowsiness_delta": {"type": "number"},
+  "max_drowsiness_abs_delta": {"type": "number"},
+        "drowsiness_spike_timestamp": {"type": "string", "format": "date-time"},
+        "drowsiness_trend": {"type": "string", "enum": ["increasing", "decreasing", "stable"]},
+        "blink_rate_trend": {"type": "string", "enum": ["increasing", "decreasing", "stable"]},
+        "head_pose_mean_pitch": {"type": "number"},
+        "head_pose_mean_yaw": {"type": "number"},
+        "head_pose_mean_roll": {"type": "number"},
+        "total_yawns": {"type": "integer", "minimum": 0},
+        "micro_sleep_events": {"type": "integer", "minimum": 0},
+        "sample_count": {"type": "integer", "minimum": 0},
+        "state_transitions_count": {"type": "integer", "minimum": 0, "description": "Number of state changes in window"},
+        "max_state_level": {"type": "integer", "minimum": 0, "maximum": 3, "description": "Highest state level reached (0=NORMAL, 1=TIRED, 2=DROWSY, 3=MICROSLEEP)"},
+        "time_in_drowsy_s": {"type": "number", "minimum": 0, "description": "Time spent in DROWSY state (seconds)"},
+        "time_in_microsleep_s": {"type": "number", "minimum": 0, "description": "Time spent in MICROSLEEP state (seconds)"},
+        "drowsy_event_count": {"type": "integer", "minimum": 0, "description": "Number of DROWSY state entries"},
+        "microsleep_event_count": {"type": "integer", "minimum": 0, "description": "Number of MICROSLEEP state entries"},
+        "current_state": {"type": "string", "enum": ["NORMAL", "TIRED", "DROWSY", "MICROSLEEP"], "description": "Last observed state in window"},
+        "state_mode": {"type": "string", "enum": ["NORMAL", "TIRED", "DROWSY", "MICROSLEEP"], "description": "Most frequent state in window"}
+      },
+      "additionalProperties": false
+    },
+    "ble_mesh_features": {
+      "type": "object",
+      "description": "Aggregate BLE mesh features computed from neighbor samples",
+      "properties": {
+        "neighbor_count_mean": {"type": "number", "minimum": 0},
+        "neighbor_count_std": {"type": "number", "minimum": 0},
+        "neighbor_count_min": {"type": "number", "minimum": 0},
+        "neighbor_count_max": {"type": "number", "minimum": 0},
+        "nearest_distance_m": {"type": "number", "minimum": 0},
+        "farthest_distance_m": {"type": "number", "minimum": 0},
+        "avg_distance_m": {"type": "number", "minimum": 0},
+        "mesh_density": {"type": "integer", "minimum": 0},
+        "approaching_neighbors_count": {"type": "integer", "minimum": 0},
+        "receding_neighbors_count": {"type": "integer", "minimum": 0},
+        "max_closing_speed_mps": {"type": "number"},
+        "unique_neighbors_count": {"type": "integer", "minimum": 0},
+        "neighbor_churn_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "avg_rssi": {"type": "number"},
+        "rssi_std": {"type": "number", "minimum": 0},
+        "sample_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "camera_features": {
+      "type": "object",
+      "description": "Aggregate camera features computed from frame detections within the window",
+      "properties": {
+        "total_detections": {"type": "integer", "minimum": 0},
+        "avg_detections_per_frame": {"type": "number", "minimum": 0},
+        "detection_classes": {"type": "object"},
+        "unique_classes": {"type": "array", "items": {"type": "string"}},
+        "min_distance_m": {"type": "number", "minimum": 0},
+        "avg_closest_distance_m": {"type": "number", "minimum": 0},
+        "distance_std": {"type": "number", "minimum": 0},
+        "objects_within_5m": {"type": "integer", "minimum": 0},
+        "objects_within_10m": {"type": "integer", "minimum": 0},
+        "objects_within_20m": {"type": "integer", "minimum": 0},
+        "avg_objects_in_path": {"type": "number", "minimum": 0},
+        "max_objects_in_path": {"type": "integer", "minimum": 0},
+        "obstacle_in_path_frames": {"type": "integer", "minimum": 0},
+        "obstacle_in_path_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "avg_lane_offset_m": {"type": "number"},
+        "lane_offset_std": {"type": "number", "minimum": 0},
+        "left_lane_clear_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "right_lane_clear_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "pedestrian_frames": {"type": "integer", "minimum": 0},
+        "pedestrian_near_crossing_frames": {"type": "integer", "minimum": 0},
+        "pedestrian_risk_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "approaching_objects_count": {"type": "integer", "minimum": 0},
+        "receding_objects_count": {"type": "integer", "minimum": 0},
+        "max_approach_speed_mps": {"type": "number"},
+        "avg_rel_speed_mps": {"type": "number"},
+        "avg_visibility_estimate_m": {"type": "number", "minimum": 0},
+        "min_visibility_m": {"type": "number", "minimum": 0},
+        "flagged_frames_count": {"type": "integer", "minimum": 0},
+        "flagged_frames_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "sample_count": {"type": "integer", "minimum": 0},
+        "frames_with_detections": {"type": "integer", "minimum": 0},
+        "detection_rate": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "environment_features": {
+      "type": "object",
+      "description": "Aggregate environment features computed from weather and road samples",
+      "properties": {
+        "weather_risk_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "road_geometry_risk_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "combined_risk_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "time_of_day": {"type": "string", "enum": ["night", "morning", "afternoon", "evening", "unknown"]},
+        "precip_type_mode": {"type": "string", "enum": ["none", "rain", "snow"]},
+        "avg_precip_intensity_mm_hr": {"type": "number", "minimum": 0},
+        "max_precip_intensity_mm_hr": {"type": "number", "minimum": 0},
+        "visibility_mean_m": {"type": "number", "minimum": 0},
+        "visibility_min_m": {"type": "number", "minimum": 0},
+        "visibility_std": {"type": "number", "minimum": 0},
+        "visibility_category": {"type": "string", "enum": ["low", "medium", "high"]},
+        "ambient_light_mode": {"oneOf": [{"type":"string"}, {"type":"number"}]},
+        "road_surface_mode": {"type": "string", "enum": ["dry", "wet", "oily", "icy"]},
+        "wet_road_flag": {"type": "boolean"},
+        "curvature_mean_m": {"type": "number"},
+        "curvature_min_m": {"type": "number"},
+        "curvature_std": {"type": "number"},
+        "high_curvature_flag": {"type": "boolean"},
+        "speed_limit_mode_kph": {"type": "number"},
+        "turn_frequency": {"type": "number", "minimum": 0, "maximum": 1},
+        "intersection_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "slope_mean_percent": {"type": "number"},
+        "slope_max_abs_percent": {"type": "number"},
+        "weather_sample_count": {"type": "integer", "minimum": 0},
+        "road_sample_count": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "ble_mesh": {
+      "oneOf": [
+        {"type": "object"},
+        {"type": "array", "items": {"type": "object"}}
+      ],
+      "description": "Either a single BLE neighbor snapshot (legacy) or a list of neighbor samples"
+    },
+    "camera": {
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "Single camera frame (legacy format)"
+        },
+        {
+          "type": "array",
+          "items": {"type": "object"},
+          "description": "Array of camera frames within the window"
+        }
+      ],
+      "description": "Camera detection data - either single frame or array of frames"
+    },
+    "weather": {
+      "oneOf": [
+        {"type": "object"},
+        {"type": "array", "items": {"type": "object"}}
+      ],
+      "description": "Either a single weather sample (legacy) or a list of timestamped weather samples"
+    },
+    "road": {
+      "oneOf": [
+        {"type": "object"},
+        {"type": "array", "items": {"type": "object"}}
+      ],
+      "description": "Either a single road sample (legacy) or a list of timestamped road samples"
+    },
+    "label": {
+      "type": "object",
+      "properties": {
+        "accident_within_10s": {"type": "boolean"},
+        "accident_type": {"type": "string", "enum": ["collision", "slip", "off-road", "none"]},
+        "near_miss_flag": {"type": "boolean"},
+        "accident_severity": {"type": "string", "enum": ["minor", "moderate", "severe"]}
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "sensor_health": {"type": "object"},
+        "missing_sensors": {"type": "array", "items": {"type": "string"}},
+        "data_quality_score": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  },
+  "additionalProperties": true,
+  "description": "Schema for a windowed sample containing multimodal sensor data"
+}

@@ -1,0 +1,14 @@
+sensors:
+  camera:
+    fps: 10
+    backend: v4l2
+    enable_hardware_accel: false
+    preferred_pixel_format: MJPG
+  vehicle_can:
+    enable: false
+    simulate: true
+
+inference:
+  model_path: /models/risk_model.tflite
+  use_edgetpu: false
+  device: cpu

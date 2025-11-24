@@ -1,0 +1,158 @@
+# Deployment artifacts
+deployment/libs/
+deployment/benchmark_results.json
+deployment/docker/.env
+*.service
+
+# usual
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+*.log
+# Ignore external driver drowsiness repo if cloned
+data_collection/sensors/driver_drowsiness/external_repo/
+
+# Test and example videos
+*.mp4
+*.avi
+data/driver_fatigue_videos/
+
+# Cached models and pickles
+*.pkl
+*.dat
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Data and models
+data/
+logs/
+models/*.h5
+models/*.pkl
+models/*.pth
+models/*.onnx
+models/*.tflite
+models/checkpoints/
+*.npy
+*.npz
+models/trained/
+models/trained/lstm/
+models/trained/cnn/
+models/trained/multimodal/
+*.h5
+*.tflite
+*.pb
+tensorboard_logs/
+examples/output/lstm_*/
+examples/output/cnn_*/
+examples/output/multimodal_*/
+examples/output/comparison/
+
+# Large data artifacts (directory-scoped)
+data/**/*.csv
+data/**/*.json
+output/**/*.csv
+output/**/*.json
+
+# Keep config JSON files tracked (explicit allow)
+!config/**/*.json
+
+# Telemetry and outputs
+output/
+results/
+experiments/
+telemetry/
+events/
+
+# Secrets
+.env
+*.key
+*.pem
+secrets.yaml
+credentials.json
+
+# System files
+Thumbs.db
+Desktop.ini
+
+# Keep config tracked but ignore environment overrides
+config/secrets.yaml
+
+# Battery monitoring data and logs
+data/bms_simulation.csv
+data/battery_alerts.log
+data/battery_events.db
+data/battery_events.db-*
+battery_monitor/dashboard/static/uploads/
+shutdown.log
+ble_outbox.json
+data/ble_fatigue_outbox.json
+data/fatigue_events.db
+data/fatigue_events.csv
+# Dashboard artifacts
+data/annotations.db
+data/incidents.db
+dashboard/__pycache__/
+ 
+# Orchestrator outputs
+data/ble_safety_outbox.jsonl
+orchestrator.log
+*.pid

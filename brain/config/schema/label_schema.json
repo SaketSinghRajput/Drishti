@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Label Schema",
+  "type": "object",
+  "required": ["window_id", "timestamp", "annotation_timestamp", "is_accident"],
+  "properties": {
+    "window_id": {"type": "string", "description": "Reference to sensor window"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "annotator_id": {"type": "string"},
+    "annotation_timestamp": {"type": "string", "format": "date-time"},
+    "is_accident": {"type": "boolean"},
+    "accident_type": {"type": "string", "enum": ["collision", "slip", "off-road", "rollover", "none"]},
+    "accident_severity": {"type": "string", "enum": ["minor", "moderate", "severe", "fatal"]},
+    "time_to_accident_s": {"type": "number", "minimum": 0},
+    "accident_cause": {"type": "array", "items": {"type": "string"}},
+    "is_near_miss": {"type": "boolean"},
+    "evasive_action_taken": {"type": "string", "enum": ["braking", "swerving", "acceleration", "none"]},
+    "max_deceleration_g": {"type": "number"},
+    "contributing_factors": {"type": "array", "items": {"type": "string"}},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "notes": {"type": "string"},
+    "requires_review": {"type": "boolean"},
+    "validated_by": {"type": "string"},
+    "validation_timestamp": {"type": "string", "format": "date-time"},
+    "validation_status": {"type": "string", "enum": ["pending", "approved", "rejected"]}
+  },
+  "additionalProperties": false
+}

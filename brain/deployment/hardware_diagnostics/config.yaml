@@ -1,0 +1,80 @@
+# Hardware diagnostics configuration
+# This file contains detection timeouts and mappings used by the
+# `HardwareChecker`. It is intentionally separate from the main
+# `config/default_config.yaml` to keep hardware mappings compact.
+
+enable_simulation: false
+
+timeouts:
+  i2cdetect: 5
+  v4l2_ctl: 3
+  ip_link: 2
+  bluetoothctl: 5
+  default: 5
+
+# Hardware-to-sensor mappings
+i2c_addresses:
+  0x68: imu   # e.g. MPU6050/MPU9250
+  0x76: bms   # example BMS I2C
+
+spi_devices:
+  /dev/spidev0.0: mcp2515
+
+uart_devices:
+  /dev/ttyUSB0: gps
+  /dev/ttyAMA0: gps
+  /dev/ttyUSB1: gsm
+
+can_interfaces:
+  - can0
+
+camera_devices:
+  /dev/video0: camera
+  /dev/video1: driver_fatigue
+
+gpio_pins:
+  buzzer: 18
+  led_red: 17
+  led_green: 27
+  relay: 24
+
+ble_required: true
+
+esp32_uart_device: /dev/ttyUSB2
+esp32_heartbeat_timeout_s: 2
+
+log_dir: /home/pi/system_logs
+log_file: hardware_check.log
+log_level: INFO
+
+# Self-test configuration (Phase 2)
+self_test_timeouts:
+  imu: 5
+  gps: 5
+  camera: 5
+  bms: 5
+  vehicle_can: 5
+  buzzer: 2
+  led_red: 2
+  led_green: 2
+  ble_mesh: 5
+  esp32: 5
+  driver_fatigue: 5
+  default: 5
+
+self_test_validation_ranges:
+  imu:
+    az_min: 7.8
+    az_max: 11.8
+  gps:
+    lat_min: -90.0
+    lat_max: 90.0
+    lon_min: -180.0
+    lon_max: 180.0
+  bms:
+    pack_voltage_min: 0.0
+    soc_min: 0.0
+    soc_max: 100.0
+  driver_fatigue:
+    drowsiness_score_min: 0.0
+    drowsiness_score_max: 1.0

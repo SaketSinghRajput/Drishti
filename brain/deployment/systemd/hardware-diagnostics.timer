@@ -1,0 +1,18 @@
+# EV Safety Guardian - Hardware Diagnostics Timer
+# Phase 4: periodic re-checks via systemd timer
+# Documentation: docs/deployment.md#hardware-diagnostics
+
+[Unit]
+Description=EV Safety Guardian - Hardware Diagnostics Periodic Check
+Documentation=file:///opt/ev-safety-guardian/docs/deployment.md#hardware-diagnostics
+Requires=hardware-diagnostics.service
+
+[Timer]
+# First re-check 5 minutes after boot, then every 5 minutes
+OnBootSec=5min
+OnUnitActiveSec=5min
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

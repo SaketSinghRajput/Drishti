@@ -1,0 +1,23 @@
+# Model training outputs
+models/trained/
+models/*.json
+models/*.ubj
+models/*.onnx
+models/*.pkl
+
+# Evaluation results
+evaluation_results/
+*.png
+*.jpg
+*.pdf
+
+# SHAP cache
+.shap_cache/
+
+# Training logs
+training_logs/
+*.log
+
+# Temporary training data
+data/splits/
+data/balanced/

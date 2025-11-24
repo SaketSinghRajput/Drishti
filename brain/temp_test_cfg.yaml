@@ -1,0 +1,4 @@
+data_collection:
+  expected_sensors: [imu, gps, camera]
+hardware_diagnostics:
+  enable_simulation: false

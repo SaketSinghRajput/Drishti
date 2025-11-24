@@ -1,0 +1,40 @@
+sensors:
+  driver_fatigue:
+    enable_cv_detection: true
+    sample_rate: 5         # lower sample rate (Hz)
+    downscale: true  
+  camera:
+    fps: 15
+    backend: opencv
+    enable_hardware_accel: false
+    enable_webcam: true
+  vehicle_can:
+    enable: false
+    simulate: true
+
+inference:
+  model_path: models/risk_model.tflite
+  use_edgetpu: false
+
+# Orchestrator-specific development overrides
+orchestrator:
+  enable_hardware_check: false
+  enable_dashboard: true
+  dashboard_port: 5000
+  enable_ble_broadcast: true
+  ble_broadcast_interval_s: 1
+  enable_bms_monitor: true
+  enable_alerts: true
+  loop_interval_s: 1.0
+  max_loop_iterations: null
+
+hardware_diagnostics:
+  enable_simulation: true
+  log_dir: data
+
+telemetry:
+  enable: true
+  retention_days: 1
+
+  llm_integration:
+    enabled: false

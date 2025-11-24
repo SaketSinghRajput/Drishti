@@ -1,0 +1,16 @@
+:root{
+  --bg-primary:#1a1a1a;
+  --bg-secondary:#2a2a2a;
+  --text-primary:#e0e0e0;
+  --accent-ok:#4CAF50;
+}
+body{background:var(--bg-primary);color:var(--text-primary);}
+.card{background:var(--bg-secondary);color:var(--text-primary);}
+#riskValue{font-weight:700}
+
+.nav-tabs .nav-link { color: var(--text-primary); }
+.nav-tabs .nav-link.active { background: #111; border-color: #333; }
+.table { color: var(--text-primary); }
+.modal-content { background: #141414; }
+.btn-outline-primary { color: var(--text-primary); border-color: #4a7; }
+

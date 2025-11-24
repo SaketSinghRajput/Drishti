@@ -1,0 +1,33 @@
+# Battery monitoring rule thresholds and severity mapping
+thresholds:
+  # Maximum cell temperature in Celsius before triggering alerts
+  max_cell_temp_c: 70.0
+
+  # Voltage imbalance threshold across cells (V)
+  voltage_diff_threshold_v: 0.25
+
+  # Pack current magnitude considered a spike (A)
+  current_spike_threshold_a: 100.0
+
+  # SoH drop rate threshold in percent per day
+  soh_drop_rate_percent_per_day: 0.5
+
+  # Number of recent samples to consider for SoH drop computation
+  soh_history_window_samples: 60
+  # Pack-level thresholds for ADC-derived power-bus readings
+  pack_voltage_min_v: 3.0
+  pack_voltage_max_v: 5.0
+  pack_current_spike_a: 100.0
+  pack_temp_max_c: 70.0
+  voltage_drop_threshold_v: 0.5
+
+severities:
+  # Severity thresholds expressed as normalized ratios (used to map violation magnitude)
+  low: 0.2
+  medium: 0.5
+  high: 0.75
+  critical: 0.9
+
+# Notes:
+# - These thresholds are defaults; they may be overridden by environment-specific
+#   configuration via the main ConfigLoader or a deployment config file.

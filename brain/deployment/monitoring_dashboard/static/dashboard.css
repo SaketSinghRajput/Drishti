@@ -1,0 +1,4 @@
+body { font-family: Arial, sans-serif; background: #111; color: #eee; margin: 0; padding: 0; }
+.container { padding: 20px; }
+.card { display:inline-block; padding: 12px; margin: 8px; background:#222; border-radius:6px; min-width:150px; }
+#charts { margin-top:20px; }

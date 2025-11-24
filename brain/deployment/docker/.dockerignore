@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+tests/
+data/
+venv/
+.git/
+*.egg-info
+dist/
+deployment/*.service
+__pycache__/
+*.pyc
+tests/
+data/
+venv/
+.git/
+*.egg-info
+dist/

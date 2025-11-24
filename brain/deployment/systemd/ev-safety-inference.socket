@@ -1,0 +1,9 @@
+[Unit]
+Description=Socket for EV Safety Inference
+
+[Socket]
+ListenStream=5000
+Accept=no
+
+[Install]
+WantedBy=sockets.target

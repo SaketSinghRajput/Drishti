@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EV Safety Guardian - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/dashboard.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">EV Safety Guardian - Dashboard</a>
+      </div>
+    </nav>
+    <div class="container-fluid mt-3">
+      <!-- Nav tabs -->
+      <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation"><button class="nav-link active" id="realtime-tab" data-bs-toggle="tab" data-bs-target="#realtime" type="button" role="tab">Real-time</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" id="incidents-tab" data-bs-toggle="tab" data-bs-target="#incidents" type="button" role="tab">Incident Review</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab">Analytics</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">Settings</button></li>
+      </ul>
+
+      <div class="tab-content mt-3">
+        <div class="tab-pane fade show active" id="realtime" role="tabpanel">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="card p-3">
+                <h5>Live Risk Score</h5>
+                <canvas id="riskChart" height="120"></canvas>
+                <div id="riskValue" class="h1 mt-2">-</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card p-3">
+                <h5>Sensor Health</h5>
+                <div id="sensorGrid"></div>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-md-12">
+              <div class="card p-3">
+                <h5>Recent Alerts</h5>
+                <div id="alertsList"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="incidents" role="tabpanel">
+          <div class="card p-3">
+            <h5>Incidents</h5>
+            <div class="table-responsive">
+              <table class="table table-striped" id="incidentsTable">
+                <thead><tr><th>ID</th><th>Timestamp</th><th>Risk</th><th>Level</th><th>Video</th><th>Annotations</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="analytics" role="tabpanel">
+          <div class="row">
+            <div class="col-md-3">
+              <div class="card p-3 mb-3"><strong>False Alarm Rate</strong><div id="card-false-rate">-</div></div>
+              <div class="card p-3 mb-3"><strong>Latency p95</strong><div id="card-latency-p95">-</div></div>
+              <div class="card p-3 mb-3"><strong>Incidents Reviewed</strong><div id="card-inc-reviewed">-</div></div>
+            </div>
+            <div class="col-md-9">
+              <div class="card p-3 mb-3"><canvas id="chart-false-rate"></canvas></div>
+              <div class="card p-3 mb-3"><canvas id="chart-latency"></canvas></div>
+              <div class="card p-3 mb-3"><canvas id="chart-feature-importance"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="settings" role="tabpanel">
+          <div class="card p-3">
+            <h5>Settings</h5>
+            <div id="settingsContent">Polling interval: <span id="pollIntervalDisplay">1000ms</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Incident modal -->
+    <div class="modal fade" id="incidentModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title" id="incidentModalLabel">Incident</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-6">
+                <video id="incidentVideo" controls style="width:100%;background:#000"></video>
+              </div>
+              <div class="col-md-6">
+                <canvas id="incidentTimeline" height="240"></canvas>
+                <hr/>
+                <div id="annotationList"></div>
+                <form id="annotationForm">
+                  <div class="mb-2">
+                    <label class="form-label">Label</label><br/>
+                    <div class="btn-group" role="group" aria-label="Labels">
+                      <input type="radio" class="btn-check" name="label" id="label-tp" value="TP" checked><label class="btn btn-outline-primary" for="label-tp">TP</label>
+                      <input type="radio" class="btn-check" name="label" id="label-fp" value="FP"><label class="btn btn-outline-warning" for="label-fp">FP</label>
+                      <input type="radio" class="btn-check" name="label" id="label-tn" value="TN"><label class="btn btn-outline-secondary" for="label-tn">TN</label>
+                      <input type="radio" class="btn-check" name="label" id="label-fn" value="FN"><label class="btn btn-outline-danger" for="label-fn">FN</label>
+                    </div>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Severity</label>
+                    <select class="form-select" id="severitySelect"><option value="minor">Minor</option><option value="moderate">Moderate</option><option value="severe">Severe</option></select>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" id="annotationNotes" rows="3"></textarea>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">Reviewer ID</label>
+                    <input class="form-control" id="reviewerId" value="anonymous" />
+                  </div>
+                  <button type="submit" class="btn btn-success">Submit Annotation</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/dashboard.js"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+sensors:
+  camera:
+    fps: 30
+    backend: gstreamer
+    enable_hardware_accel: true
+  vehicle_can:
+    enable: true
+    interface: can0
+
+inference:
+  model_path: /models/risk_model.onnx
+  runtime: onnx
+  use_cuda: true

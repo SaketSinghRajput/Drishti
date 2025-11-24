@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LibreSolar bms-c1 telemetry schema",
+  "description": "Schema for LibreSolar bms-c1 battery management system telemetry data.",
+  "type": "object",
+  "required": ["timestamp", "pack_voltage", "pack_current", "soc", "soh"],
+  "properties": {
+    "timestamp": {"type": "string", "format": "date-time", "description": "ISO 8601 UTC timestamp"},
+    "pack_voltage": {"type": "number", "minimum": 0, "maximum": 100, "description": "Pack voltage in volts"},
+    "pack_current": {"type": "number", "minimum": -200, "maximum": 200, "description": "Pack current in amperes (negative = charge)"},
+    "soc": {"type": "number", "minimum": 0, "maximum": 100, "description": "State of Charge in percent"},
+    "soh": {"type": "number", "minimum": 0, "maximum": 100, "description": "State of Health in percent"},
+    "cell_voltages": {
+      "type": "array",
+      "items": {"type": "number", "minimum": 2.5, "maximum": 4.5},
+      "description": "Per-cell voltages in volts"
+    },
+    "cell_temps": {
+      "type": "array",
+      "items": {"type": "number", "minimum": -20, "maximum": 80},
+      "description": "Per-cell temperatures in Celsius"
+    },
+    "balancer_status": {
+      "type": "array",
+      "items": {"type": "integer", "enum": [0, 1]},
+      "description": "Balancer on/off per cell"
+    },
+    "fault_codes": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "List of fault code identifiers"
+    },
+    "metadata": {"type": "object", "additionalProperties": true}
+  },
+  "additionalProperties": false
+}

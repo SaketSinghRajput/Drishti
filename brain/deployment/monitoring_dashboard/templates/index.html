@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EV Safety Guardian - System Monitor</title>
+    <link rel="stylesheet" href="/static/dashboard.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>EV Safety Guardian - System Monitor</h1>
+      <div id="metrics">
+        <div class="card"><strong>CPU</strong><div id="cpu">-</div></div>
+        <div class="card"><strong>Memory</strong><div id="memory">-</div></div>
+        <div class="card"><strong>Disk</strong><div id="disk">-</div></div>
+        <div class="card"><strong>Uptime</strong><div id="uptime">-</div></div>
+        <div class="card"><strong>Inference</strong><div id="inference">-</div></div>
+        <div class="card"><strong>Sensor Health</strong><div id="sensor_health">-</div></div>
+      </div>
+      <div id="charts">
+        <canvas id="latencyChart" height="200"></canvas>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/dashboard.js"></script>
+  </body>
+</html>

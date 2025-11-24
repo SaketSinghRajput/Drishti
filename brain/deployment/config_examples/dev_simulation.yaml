@@ -1,0 +1,12 @@
+sensors:
+  camera:
+    fps: 15
+    backend: opencv
+    enable_hardware_accel: false
+  vehicle_can:
+    enable: false
+    simulate: true
+
+inference:
+  model_path: models/risk_model.tflite
+  use_edgetpu: false
