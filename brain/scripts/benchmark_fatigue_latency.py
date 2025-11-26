@@ -80,6 +80,7 @@ def run_handler_benchmark(tflite_model: str = '', video: str = '', frames: int =
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--tflite-model', help='Path to .tflite model to benchmark', default='')
+    p.add_argument('--mediapipe-suite', action='store_true', help='Run MediaPipe task suite benchmark (per-stage timing)')
     p.add_argument('--video', help='Path to video file to read frames from', default='')
     p.add_argument('--frames', type=int, default=300)
     args = p.parse_args()
@@ -87,7 +88,43 @@ def main():
         print('Required modules not available; running synthetic benchmark')
         synthetic_benchmark(args.frames)
         return
-    run_handler_benchmark(args.tflite_model, args.video, args.frames)
+    if args.mediapipe_suite:
+        # attempt to run mediapipe suite using provided tflite model path as a fallback
+        try:
+            from brain.utils.model_loader_tflite import TFLiteDetectionModel
+            print('Running MediaPipe TFLite task suite (best-effort)')
+            # if no model provided, fall back to synthetic
+            if not args.tflite_model:
+                print('No model provided for mediapipe suite; running synthetic benchmark')
+                synthetic_benchmark(args.frames)
+            else:
+                # simple per-frame timing using TFLiteDetectionModel
+                mdl = TFLiteDetectionModel(args.tflite_model, config={'tflite_num_threads': 2})
+                try:
+                    mdl.load()
+                except Exception as e:
+                    print('Failed to load mediapipe tflite model:', e)
+                    synthetic_benchmark(args.frames)
+                    return
+                import cv2
+                cap = cv2.VideoCapture(0 if not args.video else args.video)
+                times = []
+                for i in range(args.frames):
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
+                    t0 = time.perf_counter()
+                    _ = mdl.predict(frame)
+                    times.append((time.perf_counter() - t0) * 1000.0)
+                cap.release()
+                import numpy as _np
+                if times:
+                    arr = _np.array(times)
+                    print('Mediapipe suite timing (ms): mean=%.2f p50=%.2f p90=%.2f' % (arr.mean(), _np.percentile(arr,50), _np.percentile(arr,90)))
+        except Exception as e:
+            print('Mediapipe suite failed:', e)
+    else:
+        run_handler_benchmark(args.tflite_model, args.video, args.frames)
 
 
 if __name__ == '__main__':

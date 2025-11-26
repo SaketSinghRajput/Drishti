@@ -129,6 +129,13 @@ This project includes an integrated Driver Fatigue subsystem that exposes:
 
 See `docs/driver_fatigue_integration.md` for full usage and configuration.
 
+## MediaPipe TFLite Optimization
+
+The project includes optional MediaPipe TFLite task integrations for low-latency
+face and pose processing used by the driver fatigue and camera pipelines. See
+`docs/mediapipe_tflite_integration.md` for configuration, model placement, and
+troubleshooting steps.
+
 Quick start:
 
 ```powershell
@@ -217,3 +224,29 @@ Development:
 - Tests: run `pytest`
 
 License: TBD
+
+### Hand Pose & Enhanced Pedestrian Detection
+
+Hand landmark detection for steering wheel grip monitoring and enhanced pose
+analysis for pedestrian intent scoring (walking towards vehicle) and cyclist
+lean detection (maneuvering risk).
+
+- Deploy models:
+
+```powershell
+python brain/scripts/deploy_hand_pose_models.py --model-variant lite
+```
+
+- Run the hand pose example:
+
+```powershell
+python brain/examples/hand_pose_example.py --model-path brain/models/hand_landmark_lite.tflite
+```
+
+Configuration toggles are available in `brain/config/default_config.yaml`:
+- `mediapipe.hand_landmark.enabled`
+- `sensors.driver_fatigue.hand_landmark.enable`
+- `sensors.camera.enable_pedestrian_intent`
+
+See `brain/docs/hand_pose_integration.md` for detailed documentation and
+testing instructions.

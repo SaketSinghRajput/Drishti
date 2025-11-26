@@ -45,11 +45,39 @@ class TFLiteDetectionModel(BaseDetectionModel):
         self.interpreter = None
         self.input_details = None
         self.output_details = None
+        # MediaPipe task detection
+        self.mediapipe_task_type: Optional[str] = None
+        # cache loader if MediaPipe task detected
+        self._mediapipe_loader = None
         # ensure classes set
         if getattr(self, 'classes', None) is None:
             self.classes = classes
 
     def load(self) -> None:
+        # Attempt to auto-detect MediaPipe task and delegate to task loader
+        try:
+            task = self.auto_detect_mediapipe_task(self.model_path)
+            self.mediapipe_task_type = task
+        except Exception:
+            self.mediapipe_task_type = None
+
+        # If MediaPipe model detected and factory available, use it
+        try:
+            from brain.utils.mediapipe_loaders import MediaPipeFaceDetector  # quick import test
+        except Exception:
+            # fall back to generic TFLite interpreter
+            task = None
+
+        if self.mediapipe_task_type:
+            try:
+                loader = MediaPipeTaskLoader.load_task(self.mediapipe_task_type, self.model_path, config=self.config)
+                if loader is not None:
+                    self._mediapipe_loader = loader
+                    # loader may have its own load/allocate semantics
+                    return
+            except Exception:
+                logger.exception("MediaPipe task loader failed; falling back to generic TFLite interpreter")
+
         try:
             import tensorflow as tf
         except Exception as e:
@@ -62,7 +90,53 @@ class TFLiteDetectionModel(BaseDetectionModel):
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
 
+    # --- MediaPipe auto-detection and factory ---
+    @staticmethod
+    def auto_detect_mediapipe_task(model_path: str) -> Optional[str]:
+        """Inspect TFLite model metadata/tensor shapes to guess MediaPipe task type.
+
+        Returns one of: 'face_detection','face_landmark','iris_landmark','hand_landmark','pose_detection','pose_landmark' or None.
+        """
+        try:
+            try:
+                import tflite_runtime.interpreter as tflite
+            except Exception:
+                import tensorflow as tf
+                tflite = tf.lite
+        except Exception:
+            return None
+        try:
+            interp = tflite.Interpreter(model_path=model_path)
+            interp.allocate_tensors()
+            outs = interp.get_output_details()
+            # examine output shapes
+            for od in outs:
+                shape = od.get('shape') or []
+                if len(shape) >= 3:
+                    # face landmark: 1 x 468 x 3
+                    if shape[-2] == 468 and shape[-1] in (2, 3):
+                        return 'face_landmark'
+                    # pose landmark: 1 x 33 x 3
+                    if shape[-2] == 33 and shape[-1] in (2, 3):
+                        return 'pose_landmark'
+                    # hand landmark: 1 x 21 x 2/3
+                    if shape[-2] == 21 and shape[-1] in (2, 3):
+                        return 'hand_landmark'
+            # fallback on signature names
+            for od in outs:
+                name = od.get('name', '').lower()
+                if 'iris' in name:
+                    return 'iris_landmark'
+                if 'face' in name and 'detection' in name:
+                    return 'face_detection'
+                if 'pose' in name and 'detection' in name:
+                    return 'pose_detection'
+        except Exception:
+            return None
+        return None
+
     def get_input_size(self) -> (int, int):
+        # Return (height, width) expected by the model input
         if not self.input_details:
             return (300, 300)
         shape = self.input_details[0]["shape"]
@@ -72,6 +146,65 @@ class TFLiteDetectionModel(BaseDetectionModel):
         return (int(shape[1]), int(shape[2]))
 
     def predict(self, image: 'np.ndarray') -> List[Dict[str, Any]]:
+        # If a MediaPipe specialized loader is present, try delegating to it
+        loader = getattr(self, '_mediapipe_loader', None)
+        if loader is not None:
+            try:
+                # Try common method names: predict, detect, detect_persons
+                if hasattr(loader, 'predict'):
+                    res = loader.predict(image)
+                elif hasattr(loader, 'detect'):
+                    res = loader.detect(image)
+                elif hasattr(loader, 'detect_persons'):
+                    res = loader.detect_persons(image)
+                else:
+                    res = None
+
+                # Normalize results
+                if isinstance(res, list):
+                    out_list = res
+                elif isinstance(res, dict):
+                    out_list = [res]
+                else:
+                    out_list = []
+
+                # If results look like mediapipe detections ({'bbox':(xmin,ymin,w,h),'score':f}), convert to internal schema
+                normalized: List[Dict[str, Any]] = []
+                img_h, img_w = image.shape[0], image.shape[1]
+                loader_name = type(loader).__name__.lower() if loader is not None else ''
+                for item in out_list:
+                    if not isinstance(item, dict):
+                        continue
+                    if 'bbox' in item and 'score' in item:
+                        xmin, ymin, w, h = item.get('bbox')
+                        x1 = int(xmin * img_w)
+                        y1 = int(ymin * img_h)
+                        x2 = int((xmin + w) * img_w)
+                        y2 = int((ymin + h) * img_h)
+                        score = float(item.get('score', item.get('confidence', 1.0)))
+                        # guess class label from loader type
+                        if 'face' in loader_name:
+                            cls = 'face'
+                        elif 'pose' in loader_name:
+                            cls = 'person'
+                        elif 'hand' in loader_name:
+                            cls = 'hand'
+                        else:
+                            cls = str(item.get('label', 'object'))
+                        normalized.append({"class": cls, "confidence": score, "bbox_pixels": [x1, y1, x2, y2]})
+                    elif 'landmarks' in item:
+                        # return landmarks as-is wrapped
+                        normalized.append({"class": item.get('class', 'landmark'), "confidence": float(item.get('score', 1.0)), "landmarks": item.get('landmarks')})
+                    else:
+                        # unknown structure: include raw item
+                        normalized.append({"class": item.get('class', 'object'), "confidence": float(item.get('score', item.get('confidence', 1.0))), "raw": item})
+
+                if normalized:
+                    return normalized
+            except Exception:
+                logger.exception('MediaPipe loader predict failed, falling back to generic TFLite')
+
+        # Generic TFLite inference path (existing behavior)
         if self.interpreter is None:
             raise RuntimeError("Interpreter not loaded")
         import numpy as _np
@@ -84,25 +217,21 @@ class TFLiteDetectionModel(BaseDetectionModel):
         img = _cv2.resize(image, (in_w, in_h))
         # convert BGR->RGB if likely
         if img.shape[2] == 3:
-            # model authors often expect RGB; this heuristic is safe for camera inputs
             img = _cv2.cvtColor(img, _cv2.COLOR_BGR2RGB)
         # handle quantized inputs
         inp_dtype = self.input_details[0]["dtype"]
         if inp_dtype == _np.uint8:
-            # convert to uint8 [0,255]
             if img.dtype != _np.uint8:
                 img_in = (img * 255.0).astype(_np.uint8)
         else:
-            # float inputs normalized to [0,1]
             img_in = img.astype(_np.float32) / 255.0
 
-        # ensure NHWC
         input_data = _np.expand_dims(img_in, axis=0)
         try:
             self.interpreter.set_tensor(self.input_details[0]["index"], input_data)
             start = _time.time()
             self.interpreter.invoke()
-            elapsed = ( _time.time() - start ) * 1000.0
+            elapsed = (_time.time() - start) * 1000.0
             logger.debug("TFLite inference time: %.2f ms", elapsed)
         except Exception as e:
             logger.exception("TFLite invoke failed: %s", e)
@@ -190,8 +319,8 @@ class TFLiteDetectionModel(BaseDetectionModel):
             dets.append({"class": cls_name, "confidence": float(score), "bbox_pixels": bbox})
 
         # apply confidence filtering and NMS
-    dets = _cu.filter_low_confidence_detections(dets, _safe_float_cfg(self.config.get("detection_confidence_threshold", 0.5)))
-    dets = _cu.nms_detections(dets, _safe_float_cfg(self.config.get("nms_iou_threshold", 0.5)))
+        dets = _cu.filter_low_confidence_detections(dets, _safe_float_cfg(self.config.get("detection_confidence_threshold", 0.5)))
+        dets = _cu.nms_detections(dets, _safe_float_cfg(self.config.get("nms_iou_threshold", 0.5)))
 
         # map class indices to names if available in factory
         if self.classes is None:
@@ -210,3 +339,40 @@ class TFLiteDetectionModel(BaseDetectionModel):
                     pass
 
         return dets
+
+
+class MediaPipeTaskLoader:
+    """Factory to instantiate MediaPipe task loaders from `mediapipe_loaders.py`."""
+
+    @staticmethod
+    def load_task(task_type: str, model_path: str, config: Optional[dict] = None):
+        try:
+            from brain.utils.mediapipe_loaders import (
+                MediaPipeFaceDetector,
+                MediaPipeFaceLandmarker,
+                MediaPipeIrisLandmarker,
+                MediaPipeHandLandmarker,
+                MediaPipePoseDetector,
+            )
+        except Exception:
+            # loaders not available
+            return None
+        try:
+            if task_type == 'face_detection':
+                return MediaPipeFaceDetector(model_path, config=config)
+            if task_type == 'face_landmark':
+                return MediaPipeFaceLandmarker(model_path, config=config)
+            if task_type == 'iris_landmark':
+                return MediaPipeIrisLandmarker(model_path, config=config)
+            if task_type == 'hand_landmark':
+                return MediaPipeHandLandmarker(model_path, config=config)
+            if task_type == 'pose_detection' or task_type == 'pose_landmark':
+                return MediaPipePoseDetector(model_path, landmark_path=config.get('landmark_model_path') if config else None, config=config)
+        except Exception:
+            logger.exception('Failed to instantiate MediaPipe loader for %s', task_type)
+            return None
+        return None
+
+    @staticmethod
+    def is_mediapipe_model(model_path: str) -> bool:
+        return TFLiteDetectionModel.auto_detect_mediapipe_task(model_path) is not None

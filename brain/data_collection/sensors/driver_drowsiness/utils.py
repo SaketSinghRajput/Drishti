@@ -76,52 +76,9 @@ def get_3d_face_model() -> List[Tuple[float, float, float]]:
     ]
 
 
-def get_head_pose(landmarks_2d: List[Tuple[float, float]], frame_width: int, frame_height: int, camera_matrix: np.ndarray = None, dist_coeffs: np.ndarray = None) -> Dict[str, float]:
-    """Estimate head pose (pitch, yaw, roll) from 2D landmarks.
-
-    landmarks_2d: list of 5 2D points corresponding to nose, left eye, right eye, left mouth, right mouth.
-    Returns angles in degrees.
-    """
-    # require at least 6 landmarks (nose, l-eye, r-eye, l-mouth, r-mouth, chin)
-    if len(landmarks_2d) < 6:
-        return {"pitch": 0.0, "yaw": 0.0, "roll": 0.0, "confidence": 0.0}
-    # Prepare 3D model points and 2D image points
-    model_points = np.array(get_3d_face_model(), dtype=np.float64)
-    # select first 6 corresponding points from landmarks list
-    image_points = np.array([(float(x), float(y)) for x, y in landmarks_2d[:6]], dtype=np.float64)
-
-    if camera_matrix is None:
-        focal_length = frame_width
-        center = (frame_width / 2, frame_height / 2)
-        camera_matrix = np.array([[focal_length, 0, center[0]], [0, focal_length, center[1]], [0, 0, 1]], dtype=np.float64)
-    if dist_coeffs is None:
-        dist_coeffs = np.zeros((4, 1))
-
-    # solvePnP
-    try:
-        success, rotation_vector, translation_vector = cv2.solvePnP(model_points, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
-        if not success:
-            return {"pitch": 0.0, "yaw": 0.0, "roll": 0.0, "confidence": 0.0}
-        # rotation vector to matrix
-        rmat, _ = cv2.Rodrigues(rotation_vector)
-        # compute Euler angles
-        sy = np.sqrt(rmat[0, 0] * rmat[0, 0] + rmat[1, 0] * rmat[1, 0])
-        singular = sy < 1e-6
-        if not singular:
-            x = np.arctan2(rmat[2, 1], rmat[2, 2])
-            y = np.arctan2(-rmat[2, 0], sy)
-            z = np.arctan2(rmat[1, 0], rmat[0, 0])
-        else:
-            x = np.arctan2(-rmat[1, 2], rmat[1, 1])
-            y = np.arctan2(-rmat[2, 0], sy)
-            z = 0
-        # convert to degrees
-        pitch = float(np.degrees(x))
-        yaw = float(np.degrees(y))
-        roll = float(np.degrees(z))
-        return {"pitch": pitch, "yaw": yaw, "roll": roll, "confidence": 1.0}
-    except Exception:
-        return {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}
+# NOTE: keep only a single robust get_head_pose implementation below that
+# relies on MediaPipe-style landmark indices. The older variant was removed
+# to avoid duplicated behavior and subtle divergence.
 
 
 def get_head_pose(landmarks_2d: List[Tuple[float, float]], frame_width: int, frame_height: int) -> Dict[str, float]:

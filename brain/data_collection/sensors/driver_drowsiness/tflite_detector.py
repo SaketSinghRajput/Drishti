@@ -30,6 +30,13 @@ class TFLiteDrowsinessDetector:
         self._output_details = None
         self._available = False
 
+        # whether to prefer MediaPipe TFLite task pipeline
+        self.use_mediapipe_tasks = bool(self.config.get("use_mediapipe_tasks", True))
+        self._mp_face_detector = None
+        self._mp_face_landmarker = None
+        self._mp_iris_landmarker = None
+
+        # attempt to initialize the generic single-model interpreter (legacy)
         try:
             try:
                 # prefer lightweight runtime
@@ -38,17 +45,41 @@ class TFLiteDrowsinessDetector:
                 from tensorflow.lite import Interpreter  # type: ignore
 
             if not self._model_path:
-                logger.warning("TFLite model path not provided; TFLite detector disabled")
+                logger.info("TFLite model path not provided for generic detector; it may be disabled")
             else:
                 self._interpreter = Interpreter(model_path=self._model_path, num_threads=int(self.config.get("tflite_num_threads", 1)))
                 self._interpreter.allocate_tensors()
                 self._input_details = self._interpreter.get_input_details()
                 self._output_details = self._interpreter.get_output_details()
                 self._available = True
-                logger.info("TFLiteDrowsinessDetector: loaded model %s", self._model_path)
+                logger.info("TFLiteDrowsinessDetector: loaded generic model %s", self._model_path)
         except Exception:
-            logger.exception("Failed to initialize TFLite interpreter; TFLite detector disabled")
+            logger.exception("Failed to initialize generic TFLite interpreter; continuing (may use mediapipe tasks)")
             self._available = False
+
+        # optionally initialize MediaPipe task loaders if requested
+        if self.use_mediapipe_tasks:
+            try:
+                from brain.utils.mediapipe_loaders import (
+                    MediaPipeFaceDetector,
+                    MediaPipeFaceLandmarker,
+                    MediaPipeIrisLandmarker,
+                )
+                # Support nested config structure: prefer explicit keys, then mediapipe section
+                mp_cfg = self.config.get("mediapipe", {}) if isinstance(self.config, dict) else {}
+                face_det_path = self.config.get("face_detection_model") or mp_cfg.get("face_detection", {}).get("model_path")
+                face_lm_path = self.config.get("face_landmark_model") or mp_cfg.get("face_landmark", {}).get("model_path")
+                iris_path = self.config.get("iris_landmark_model") or mp_cfg.get("iris_landmark", {}).get("model_path")
+
+                if face_det_path:
+                    self._mp_face_detector = MediaPipeFaceDetector(face_det_path, mp_cfg)
+                if face_lm_path:
+                    self._mp_face_landmarker = MediaPipeFaceLandmarker(face_lm_path, mp_cfg)
+                if iris_path:
+                    self._mp_iris_landmarker = MediaPipeIrisLandmarker(iris_path, mp_cfg)
+                logger.info("TFLiteDrowsinessDetector: media-pipe task loaders initialized")
+            except Exception:
+                logger.exception("Failed to initialize MediaPipe TFLite loaders; falling back to generic interpreter if available")
 
         # temporal state (same semantics as media-pipe detector)
         self.ear_threshold = float(self.config.get("ear_threshold", 0.25))
@@ -81,6 +112,125 @@ class TFLiteDrowsinessDetector:
         """
         with self._lock:
             try:
+                # If MediaPipe TFLite task pipeline is enabled and available, use it
+                if self.use_mediapipe_tasks and self._mp_face_detector is not None and self._mp_face_landmarker is not None:
+                    try:
+                        faces = self._mp_face_detector.detect(frame)
+                        if not faces:
+                            raise RuntimeError("no faces detected by mediapipe face detector")
+                        # pick highest score
+                        face = max(faces, key=lambda x: x.get("score", 0.0))
+                        bbox = face.get("bbox")
+                        lm = self._mp_face_landmarker.detect_landmarks(frame, bbox)
+                        if not lm:
+                            raise RuntimeError("no landmarks from mediapipe face landmarker")
+
+                        # Prefer standard MediaPipe 468 indices when present
+                        ear = 0.0
+                        mar = 0.0
+                        perclos_iris = None
+                        try:
+                            if len(lm) >= 468:
+                                # use well-known indices
+                                left_idx = [33, 160, 158, 133, 153, 144]
+                                right_idx = [362, 385, 387, 263, 373, 380]
+                                mouth_idx = [61, 291, 78, 308, 13, 14, 308, 14]
+                                left_eye = [lm[i] for i in left_idx]
+                                right_eye = [lm[i] for i in right_idx]
+                                mouth = [lm[i] for i in mouth_idx if i < len(lm)]
+                                ear_l = utils.compute_ear(left_eye)
+                                ear_r = utils.compute_ear(right_eye)
+                                ear = float((ear_l + ear_r) / 2.0)
+                                mar = float(utils.compute_mar(mouth)) if mouth else 0.0
+                            else:
+                                # fallback naive partitioning
+                                left_eye = lm[:6]
+                                right_eye = lm[6:12]
+                                mouth = lm[12:20] if len(lm) >= 20 else []
+                                ear = float((utils.compute_ear(left_eye) + utils.compute_ear(right_eye)) / 2.0) if left_eye and right_eye else 0.0
+                                mar = float(utils.compute_mar(mouth)) if mouth else 0.0
+                        except Exception:
+                            logger.exception("Error computing EAR/MAR from mediapipe landmarks")
+
+                        # try iris detection if loader available
+                        iris_info = {}
+                        if self._mp_iris_landmarker is not None:
+                            try:
+                                # build approximate eye boxes from landmarks
+                                def _bbox_from_landmarks(points):
+                                    xs = [p[0] for p in points]
+                                    ys = [p[1] for p in points]
+                                    xmin = max(0.0, min(xs) - 0.02)
+                                    ymin = max(0.0, min(ys) - 0.02)
+                                    xmax = min(1.0, max(xs) + 0.02)
+                                    ymax = min(1.0, max(ys) + 0.02)
+                                    return (xmin, ymin, xmax - xmin, ymax - ymin)
+
+                                if len(lm) >= 6:
+                                    left_eye_box = _bbox_from_landmarks(left_eye)
+                                    right_eye_box = _bbox_from_landmarks(right_eye)
+                                    left_iris = self._mp_iris_landmarker.detect_iris(frame, left_eye_box)
+                                    right_iris = self._mp_iris_landmarker.detect_iris(frame, right_eye_box)
+                                    iris_info = {"left": left_iris, "right": right_iris}
+                                    # perclos computation left as higher-level util; provide raw iris centers
+                                    if left_iris.get("center") and right_iris.get("center"):
+                                        perclos_iris = 0.0
+                            except Exception:
+                                logger.exception("Iris detection failed")
+
+                        head_pose = utils.get_head_pose(lm, frame.shape[1], frame.shape[0])
+
+                        # Temporal event detection: simple reuse of thresholds
+                        import time
+
+                        now = time.time()
+                        blink_event = False
+                        yawn_event = False
+                        if ear < self.ear_threshold:
+                            if self._eye_closed_start is None:
+                                self._eye_closed_start = now
+                            closed_ms = (now - self._eye_closed_start) * 1000.0
+                            if closed_ms >= self.blink_duration_threshold_ms:
+                                if not blink_event:
+                                    self._blink_total += 1
+                                    blink_event = True
+                            if (now - self._eye_closed_start) >= self.micro_sleep_duration_s:
+                                self._micro_sleep_flag = True
+                        else:
+                            self._eye_closed_start = None
+
+                        if mar > self.mar_threshold:
+                            if self._mouth_open_start is None:
+                                self._mouth_open_start = now
+                            open_ms = (now - self._mouth_open_start) * 1000.0
+                            if open_ms >= self.yawn_duration_threshold_ms:
+                                if not yawn_event:
+                                    self._yawn_total += 1
+                                    yawn_event = True
+                        else:
+                            self._mouth_open_start = None
+
+                        out = {
+                            "ear": float(ear),
+                            "mar": float(mar),
+                            "head_pose": head_pose,
+                            "confidence": float(face.get("score", 1.0)),
+                            "no_face_detected": False,
+                            "blinks_detected": int(blink_event),
+                            "yawns_detected": int(yawn_event),
+                            "total_blinks": int(self._blink_total),
+                            "total_yawns": int(self._yawn_total),
+                            "micro_sleep_flag": bool(self._micro_sleep_flag),
+                            "backend_used": "mediapipe_tflite",
+                            "iris": iris_info,
+                        }
+                        if perclos_iris is not None:
+                            out["perclos_iris"] = float(perclos_iris)
+                        return out
+                    except Exception:
+                        logger.exception("mediapipe tasks path failed, falling back to generic tflite or heuristics")
+
+                # fallback to legacy generic interpreter or simple heuristic
                 if not self._available:
                     # fallback heuristic
                     gray = frame[:, :, 0] if frame.ndim == 3 else frame

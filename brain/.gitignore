@@ -89,7 +89,6 @@ models/*.h5
 models/*.pkl
 models/*.pth
 models/*.onnx
-models/*.tflite
 models/checkpoints/
 *.npy
 *.npz
@@ -98,7 +97,6 @@ models/trained/lstm/
 models/trained/cnn/
 models/trained/multimodal/
 *.h5
-*.tflite
 *.pb
 tensorboard_logs/
 examples/output/lstm_*/
@@ -135,6 +133,9 @@ Desktop.ini
 
 # Keep config tracked but ignore environment overrides
 config/secrets.yaml
+
+# Allow MediaPipe TFLite models stored with sensors (track these small pre-trained files)
+!data_collection/sensors/**/models/*.tflite
 
 # Battery monitoring data and logs
 data/bms_simulation.csv

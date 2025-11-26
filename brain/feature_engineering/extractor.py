@@ -21,6 +21,11 @@ except Exception:
     pd = None
 
 from feature_engineering import feature_utils
+try:
+    from feature_engineering.extractor_interactions import grip_loss_speed_interaction, pedestrian_intent_proximity_interaction
+except Exception:
+    grip_loss_speed_interaction = None
+    pedestrian_intent_proximity_interaction = None
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +58,9 @@ class FeatureExtractor:
         self.compute_visibility_interactions = bool(cfg.get("compute_visibility_interactions", True))
         self.compute_proximity_interactions = bool(cfg.get("compute_proximity_interactions", True))
         self.compute_road_condition_interactions = bool(cfg.get("compute_road_condition_interactions", True))
+        # new optional interaction toggles
+        self.enable_grip_interactions = bool(cfg.get("enable_grip_interactions", False))
+        self.enable_pedestrian_intent_interactions = bool(cfg.get("enable_pedestrian_intent_interactions", False))
 
         self.flatten_nested_features = bool(cfg.get("flatten_nested_features", True))
         self.include_metadata = bool(cfg.get("include_metadata", True))
@@ -307,6 +315,28 @@ class FeatureExtractor:
         else:
             out[self.prefix_inter + "brake_drowsiness_interaction"] = 0.0
             out[self.prefix_inter + "nearest_object_speed_interaction"] = 0.0
+
+        # Additional interactions: grip × speed and pedestrian intent × proximity
+        try:
+            if self.enable_grip_interactions and grip_loss_speed_interaction is not None:
+                # build driver and camera feature views
+                driver_feats = {k.replace('driver_fatigue_features_', ''): v for k, v in current_features.items() if k.startswith('driver_fatigue_features_')}
+                camera_feats = {k.replace('camera_features_', ''): v for k, v in current_features.items() if k.startswith('camera_features_')}
+                grip_out = grip_loss_speed_interaction(driver_feats, camera_feats)
+                if grip_out:
+                    out.update(grip_out)
+        except Exception:
+            logger.exception('Failed to compute grip interactions')
+
+        try:
+            if self.enable_pedestrian_intent_interactions and pedestrian_intent_proximity_interaction is not None:
+                camera_feats = {k.replace('camera_features_', ''): v for k, v in current_features.items() if k.startswith('camera_features_')}
+                misc = {'min_distance_m': current_features.get('camera_features_min_distance_m') or current_features.get('min_distance_m')}
+                pi_out = pedestrian_intent_proximity_interaction(camera_feats, misc)
+                if pi_out:
+                    out.update(pi_out)
+        except Exception:
+            logger.exception('Failed to compute pedestrian intent interactions')
 
         return out
 

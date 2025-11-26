@@ -4,12 +4,33 @@ Run this script to collect a few seconds of simulated camera data and print feat
 """
 import time
 import json
+import argparse
 from config.config_loader import ConfigLoader
 from data_collection.logger import DataLogger
 
 
 def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--model", choices=["simulation", "legacy", "mediapipe"], default="simulation")
+    args = p.parse_args()
+
     cfg = ConfigLoader("config/default_config.yaml")
+    # model override mapping
+    if args.model == "mediapipe":
+        cfg.override({
+            "sensors": {"camera": {"model_type": "mediapipe_tflite", "enable_simulation": False, "enable_pose_detection": True}},
+            "mediapipe": {"enabled": True},
+        })
+    elif args.model == "legacy":
+        # explicit legacy/opencv backend
+        cfg.override({
+            "sensors": {"camera": {"model_type": "opencv", "enable_simulation": False, "enable_pose_detection": False}},
+        })
+    else:
+        # simulation: use generator and disable webcam
+        cfg.override({
+            "sensors": {"camera": {"enable_webcam": False, "model_type": "simulation", "enable_simulation": True}},
+        })
     logger = DataLogger(cfg)
     logger.start()
     print("Logging for 10 seconds (camera simulation)...")

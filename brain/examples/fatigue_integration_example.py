@@ -36,8 +36,8 @@ def main():
     # start API server in background
     app, t = run_api_in_thread(cfg)
 
-    # create handler in simulation mode
-    handler = DriverFatigueHandler(cfg, use_cv=False)
+    # create handler (use CV detection when available)
+    handler = DriverFatigueHandler(cfg, use_cv=True)
 
     # repeatedly read until a non-NORMAL state appears or for a few iterations
     for i in range(5):

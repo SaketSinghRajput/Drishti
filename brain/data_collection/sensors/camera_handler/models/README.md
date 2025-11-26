@@ -23,6 +23,14 @@ Model I/O specification
 	- Input: `float32` tensor shape `[1, H, W, 3]` (crop around person), normalized to `[0.0, 1.0]`.
 	- Output: typically `[1, 33, 3]` (x,y,z) keypoints normalized to the crop; `brain/utils/mediapipe_loaders.py` maps these back to full-frame normalized coords.
 
+Enhanced pose features
+
+- Pedestrian Intent: computed from shoulder and hip midpoints across consecutive frames. The `camera_handler` can store previous keypoints per-object and compute a `pedestrian_intent_score` in [0,1], where >0.7 indicates walking towards the camera.
+
+- Cyclist Lean: for bicycle-class detections, the shoulder-to-hip tilt angle (degrees) is computed; angles >15° indicate maneuvering.
+
+See `brain/data_collection/sensors/camera_handler_pose_enrichment.py` for the helper functions used to compute these fields.
+
 Checksum verification
 
 Run `scripts/verify_mediapipe_models.py` to compute SHA256 checksums for downloaded models and paste the canonical checksums here once verified.

@@ -72,6 +72,12 @@
         "microsleep_event_count": {"type": "integer", "minimum": 0, "description": "Number of MICROSLEEP state entries"},
         "current_state": {"type": "string", "enum": ["NORMAL", "TIRED", "DROWSY", "MICROSLEEP"], "description": "Last observed state in window"},
         "state_mode": {"type": "string", "enum": ["NORMAL", "TIRED", "DROWSY", "MICROSLEEP"], "description": "Most frequent state in window"}
+        ,
+        "grip_confidence_mean": {"type": "number", "minimum": 0, "maximum": 1, "description": "Mean confidence that driver hands are on steering wheel"},
+        "grip_confidence_std": {"type": "number", "minimum": 0, "description": "Stddev of grip confidence"},
+        "grip_confidence_min": {"type": "number", "minimum": 0, "maximum": 1},
+        "sudden_grip_loss_flag": {"type": "boolean", "description": "Flag indicating sudden grip loss in window"},
+        "no_grip_duration_s": {"type": "number", "minimum": 0, "description": "Longest continuous duration without grip in seconds"}
       },
       "additionalProperties": false
     },
@@ -127,6 +133,12 @@
         "receding_objects_count": {"type": "integer", "minimum": 0},
         "max_approach_speed_mps": {"type": "number"},
         "avg_rel_speed_mps": {"type": "number"},
+        "pedestrian_intent_score_mean": {"type": "number", "minimum": 0, "maximum": 1, "description": "Mean pedestrian intent score (higher = walking towards vehicle)"},
+        "pedestrian_intent_score_max": {"type": "number", "minimum": 0, "maximum": 1},
+        "pedestrians_walking_towards_count": {"type": "integer", "minimum": 0},
+        "avg_cyclist_lean_angle": {"type": "number", "description": "Average lean angle for cyclists in degrees"},
+        "max_cyclist_lean_angle": {"type": "number", "description": "Maximum observed cyclist lean angle in degrees"},
+        "cyclists_maneuvering_count": {"type": "integer", "minimum": 0},
         "avg_visibility_estimate_m": {"type": "number", "minimum": 0},
         "min_visibility_m": {"type": "number", "minimum": 0},
         "flagged_frames_count": {"type": "integer", "minimum": 0},

@@ -1,11 +1,34 @@
 sensors:
   driver_fatigue:
     enable_cv_detection: true
+    # Prefer MediaPipe TFLite task models for low-latency inference when available
+    use_mediapipe_tasks: true
+    # Optional generic single-model TFLite path (legacy fallback)
+    tflite_model_path: ''
+    # Thresholds read by TFLiteDrowsinessDetector
+    ear_threshold: 0.25
+    mar_threshold: 0.6
+    blink_duration_threshold_ms: 200
+    yawn_duration_threshold_ms: 1000
+    # MediaPipe/hand-specific toggles
+    hand_landmark:
+      enable: false
+      grip_detection_threshold: 0.5
+      enable_grip_features: true
   camera:
     fps: 15
     backend: opencv
     enable_hardware_accel: false
     enable_webcam: true
+    # Camera-specific mediapipe/tflite flags
+    model_type: 'opencv'
+    enable_pose_detection: false
+    pose_detection_model_path: ''
+    pose_landmark_model_path: ''
+    # Pedestrian/cyclist enrichment toggles
+    enable_pedestrian_intent: false
+    enable_cyclist_lean: false
+    pedestrian_intent_velocity_window_frames: 5
   vehicle_can:
     enable: false
     simulate: true
@@ -36,3 +59,35 @@ telemetry:
 
   llm_integration:
     enabled: false
+
+# MediaPipe TFLite task configuration (models expected under data_collection/sensors/.../models/mediapipe/)
+mediapipe:
+  enabled: true
+  tflite_num_threads: 2
+  face_detection:
+    enabled: true
+    model_path: 'data_collection/sensors/driver_drowsiness/models/mediapipe/face_detection_short_range.tflite'
+    input_size: [192, 192]
+    confidence: 0.5
+  face_landmark:
+    enabled: true
+    model_path: 'data_collection/sensors/driver_drowsiness/models/mediapipe/face_landmark_lite.tflite'
+  iris_landmark:
+    enabled: true
+    model_path: 'data_collection/sensors/driver_drowsiness/models/mediapipe/iris_landmark.tflite'
+  pose:
+    enabled: false
+    detection_model_path: 'data_collection/sensors/camera_handler/models/pose_detection.tflite'
+    landmark_model_path: 'data_collection/sensors/camera_handler/models/pose_landmark_full.tflite'
+  hand_landmark:
+    enabled: false
+    model_path: 'brain/models/hand_landmark_lite.tflite'
+    detection_confidence: 0.5
+    parallel_inference: true
+
+# Sensors-specific toggles for the new features are merged above under `sensors:`
+
+# Feature-engineering interaction toggles
+feature_engineering:
+  enable_grip_interactions: false
+  enable_pedestrian_intent_interactions: false

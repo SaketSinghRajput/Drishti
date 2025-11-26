@@ -9,6 +9,14 @@ from typing import Any, Dict, List, Optional
 import logging
 
 from utils import stats_utils
+try:
+    from data_collection.camera_adapter_intent import compute_pedestrian_intent_features, compute_cyclist_features
+except Exception:
+    try:
+        from .camera_adapter_intent import compute_pedestrian_intent_features, compute_cyclist_features
+    except Exception:
+        compute_pedestrian_intent_features = None
+        compute_cyclist_features = None
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +26,9 @@ class CameraAdapter:
         self.config = config
         self.cfg = config.get("sensors.camera", {})
         self.enable = bool(self.cfg.get("enable_aggregate_features", True))
+        # optional intent/cyclist aggregation toggles
+        self.enable_pedestrian_intent_features = bool(self.cfg.get("enable_pedestrian_intent_features", False))
+        self.enable_cyclist_features = bool(self.cfg.get("enable_cyclist_features", False))
         self.classes_of_interest = list(self.cfg.get("object_classes_of_interest", ["car", "person", "bicycle", "truck"]))
         # coerce critical thresholds to numeric list and sort ascending
         raw_thresh = self.cfg.get("critical_distance_thresholds_m", [5, 10, 20])
@@ -133,6 +144,22 @@ class CameraAdapter:
                 "frames_with_detections": int(frames_with_detections),
                 "detection_rate": float(frames_with_detections / sample_count if sample_count else 0.0),
             }
+
+            # Merge pedestrian intent & cyclist features if available and configured
+            try:
+                if self.enable_pedestrian_intent_features and compute_pedestrian_intent_features is not None:
+                    intent_feats = compute_pedestrian_intent_features(samples)
+                    if intent_feats:
+                        features.update(intent_feats)
+            except Exception:
+                logger.exception("Failed to compute pedestrian intent features")
+            try:
+                if self.enable_cyclist_features and compute_cyclist_features is not None:
+                    c_feats = compute_cyclist_features(samples)
+                    if c_feats:
+                        features.update(c_feats)
+            except Exception:
+                logger.exception("Failed to compute cyclist features")
 
             return features
         except Exception as e:

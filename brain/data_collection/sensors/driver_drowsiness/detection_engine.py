@@ -23,12 +23,19 @@ class DrowsinessDetector:
     def __init__(self, config: Optional[dict] = None):
         self.config = config or {}
         self._lock = threading.Lock()
+        # By default prefer MediaPipe TFLite task models when configured.
+        # Use explicit config keys to opt in/out: 'use_mediapipe' controls the
+        # Python MediaPipe API; 'use_mediapipe_tasks' (or 'use_tflite') enables
+        # the TFLite task pipeline which is the preferred low-latency backend.
         self._use_mediapipe = bool(self.config.get("use_mediapipe", True))
-        self._use_tflite = bool(self.config.get("use_tflite", False))
+        self._use_tflite = bool(self.config.get("use_tflite", self.config.get("use_mediapipe_tasks", True)))
         self._tflite_model_path = self.config.get("tflite_model_path", None)
         self._mp = None
         self._mp_face_mesh = None
         self._mp_drawing = None
+        # Haar cascade fallbacks (initialized if MediaPipe isn't available)
+        self._face_cascade = None
+        self._eye_cascade = None
         self._initialized = False
         # thresholds and durations (defaults chosen to match config/default_config.yaml)
         self.ear_threshold = float(self.config.get("ear_threshold", 0.25))
@@ -67,6 +74,7 @@ class DrowsinessDetector:
         self._tflite_detector: Optional[TFLiteDrowsinessDetector] = None
         if self._use_tflite:
             try:
+                # pass sensor section config so the detector can read mediapipe paths and flags
                 self._tflite_detector = TFLiteDrowsinessDetector(self.config, model_path=self._tflite_model_path)
                 if self._tflite_detector.get_model_info().get("available"):
                     logger.info("Using TFLite backend for drowsiness detection")
@@ -90,8 +98,16 @@ class DrowsinessDetector:
             self._initialized = True
             logger.info("MediaPipe Face Mesh initialized for drowsiness detection")
         except Exception:
-            logger.warning("MediaPipe not available; falling back to heuristic detector")
+            logger.warning("MediaPipe not available; falling back to Haar cascade detector if available")
             self._initialized = False
+            try:
+                import cv2
+                # load cascades for fallback detection
+                self._face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+                self._eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
+                logger.info("Loaded Haar cascades for fallback detection")
+            except Exception:
+                logger.exception("Failed to load Haar cascades for fallback detection")
 
     def process_frame(self, frame: np.ndarray, is_ir: bool = False) -> Dict[str, Any]:
         """Process a BGR frame and return detection results.
@@ -217,14 +233,51 @@ class DrowsinessDetector:
                         "micro_sleep_flag": bool(self._micro_sleep_flag),
                     }
                 else:
-                    # Fallback heuristic: use image brightness and simple thresholds
-                    gray = frame_in[:, :, 0] if frame_in.ndim == 3 else frame_in
-                    mean = float(np.mean(gray))
-                    # if very bright/dark we assume face present but cannot compute landmarks
-                    ear = 0.3 if mean > 30 else 0.1
-                    mar = 0.2 if mean < 120 else 0.4
-                    head_pose = {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}
-                    return {"ear": ear, "mar": mar, "head_pose": head_pose, "blink": False, "yawn": False, "micro_sleep": False, "blink_count": self._blink_total, "yawn_count": self._yawn_total, "confidence": 0.2, "no_face_detected": False}
+                    # Fallback: try Haar cascade face+eye detection (more useful than pure brightness)
+                    try:
+                        gray = frame_in[:, :, 0] if frame_in.ndim == 3 else frame_in
+                        ear = 0.0
+                        mar = 0.0
+                        detected = False
+                        confidence = 0.0
+                        if self._face_cascade is not None:
+                            faces = self._face_cascade.detectMultiScale(gray, 1.1, 4)
+                            if len(faces) > 0:
+                                x, y, fw, fh = faces[0]
+                                roi_gray = gray[y:y+fh, x:x+fw]
+                                eyes = []
+                                if self._eye_cascade is not None:
+                                    eyes = self._eye_cascade.detectMultiScale(roi_gray)
+                                if len(eyes) >= 2:
+                                    # compute simple EAR estimation from eye boxes
+                                    eyes = sorted(eyes, key=lambda e: e[2] * e[3], reverse=True)[:2]
+                                    ear_vals = []
+                                    for (ex, ey, ew, eh) in eyes:
+                                        ear_vals.append(max(0.05, min(0.35, 0.25 * (eh / (ew + 1e-6)) * 2.0)))
+                                    ear = float(sum(ear_vals) / len(ear_vals))
+                                    detected = True
+                                    confidence = 0.6
+                                else:
+                                    # approximate EAR from face box aspect
+                                    ear = 0.22
+                                    detected = True
+                                    confidence = 0.4
+                        if not detected:
+                            # fallback to brightness heuristic
+                            mean = float(np.mean(gray)) if gray.size else 255.0
+                            ear = 0.3 if mean > 30 else 0.1
+                            mar = 0.2 if mean < 120 else 0.4
+                            confidence = 0.2
+                        head_pose = {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}
+                        return {"ear": ear, "mar": mar, "head_pose": head_pose, "confidence": float(confidence), "no_face_detected": not bool(detected), "blinks_detected": 0, "yawns_detected": 0, "total_blinks": int(self._blink_total), "total_yawns": int(self._yawn_total), "micro_sleep_flag": False}
+                    except Exception:
+                        # worst-case fallback: brightness heuristic
+                        gray = frame_in[:, :, 0] if frame_in.ndim == 3 else frame_in
+                        mean = float(np.mean(gray))
+                        ear = 0.3 if mean > 30 else 0.1
+                        mar = 0.2 if mean < 120 else 0.4
+                        head_pose = {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}
+                        return {"ear": ear, "mar": mar, "head_pose": head_pose, "confidence": 0.2, "no_face_detected": False, "blinks_detected": 0, "yawns_detected": 0, "total_blinks": int(self._blink_total), "total_yawns": int(self._yawn_total), "micro_sleep_flag": False}
             except Exception:
                 logger.exception("Detection failed")
                 return {"ear": 0.0, "mar": 0.0, "head_pose": {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}, "blink": False, "yawn": False, "micro_sleep": False, "blink_count": self._blink_total, "yawn_count": self._yawn_total, "confidence": 0.0, "no_face_detected": True}

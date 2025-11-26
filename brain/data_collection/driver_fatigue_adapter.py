@@ -22,6 +22,7 @@ from utils.stats_utils import (
     safe_max,
     linear_trend,
 )
+from data_collection.driver_fatigue_adapter_hand import compute_grip_features
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,11 @@ class DriverFatigueAdapter:
         self.enable_rolling = bool(self.config.get(f"{sect}.enable_rolling_stats", True))
         self.enable_sudden = bool(self.config.get(f"{sect}.enable_sudden_change_detection", True))
         self.enable_trend = bool(self.config.get(f"{sect}.enable_trend_analysis", True))
+        # grip features toggle
+        try:
+            self.enable_grip_features = bool(self.config.get(f"{sect}.hand_landmark.enable_grip_features", False))
+        except Exception:
+            self.enable_grip_features = False
 
     def analyze(self, samples: List[Dict[str, Any]], events: Optional[List[Dict[str, Any]]] = None) -> Optional[Dict[str, Any]]:
         """Main entry point. Returns features dict or None for empty input.
@@ -87,6 +93,16 @@ class DriverFatigueAdapter:
                 features.update(state_features)
             except Exception:
                 logger.exception("Failed to compute state-derived features")
+
+            # Grip features (optional)
+            if self.enable_grip_features:
+                try:
+                    sample_rate = float(self.config.get(f"{sect}.sample_rate", 1.0))
+                    gf = compute_grip_features(samples, sample_rate_hz=sample_rate)
+                    if gf:
+                        features.update(gf)
+                except Exception:
+                    logger.exception("Failed to compute grip features")
 
             return features
         except Exception as e:

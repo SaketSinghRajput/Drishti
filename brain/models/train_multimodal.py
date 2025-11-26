@@ -176,6 +176,52 @@ class MultimodalTrainer:
             timeseries_key='sensor_timeseries',
             use_sliding=False
         )
+
+        # Optionally extract landmark sequences (pose/hand) when enabled in multimodal config
+        use_landmarks = bool(self.mm_cfg.get('use_landmark_sequences', False))
+        if use_landmarks:
+            Xp_train_raw, _yp_train, _meta_p_train = sequence_utils.prepare_sequences_from_windows(
+                train_w,
+                seq_length=seq_length,
+                feature_keys=self.mm_cfg.get('pose_landmark_keys'),
+                normalization='none',
+                horizon=self.horizon,
+                timeseries_key='pose_landmarks',
+                use_sliding=False
+            )
+            Xh_train_raw, _yh_train, _meta_h_train = sequence_utils.prepare_sequences_from_windows(
+                train_w,
+                seq_length=seq_length,
+                feature_keys=self.mm_cfg.get('hand_landmark_keys'),
+                normalization='none',
+                horizon=self.horizon,
+                timeseries_key='hand_landmarks',
+                use_sliding=False
+            )
+            # align shapes similar to camera alignment above
+            # For simplicity, align by meta_s_train ordering
+            Xp_train = np.zeros((len(Xs_train_raw), seq_length, Xp_train_raw.shape[-1] if getattr(Xp_train_raw, 'size', 0) else 0), dtype=float)
+            Xh_train = np.zeros((len(Xs_train_raw), seq_length, Xh_train_raw.shape[-1] if getattr(Xh_train_raw, 'size', 0) else 0), dtype=float)
+            try:
+                for j, ms in enumerate(meta_s_train):
+                    # find corresponding index in meta_p_train/meta_h_train by id
+                    # fallback: use same index mapping as camera
+                    cam_idx = cam_map_train.get(id(ms['window']))
+                    if cam_idx is not None and Xp_train.shape[-1] > 0 and len(Xp_train_raw) > cam_idx:
+                        Xp_train[j] = Xp_train_raw[cam_idx]
+                    if cam_idx is not None and Xh_train.shape[-1] > 0 and len(Xh_train_raw) > cam_idx:
+                        Xh_train[j] = Xh_train_raw[cam_idx]
+            except Exception:
+                pass
+            # normalize landmark sequences
+            if Xp_train.shape[-1] > 0:
+                pose_stats = sequence_utils.compute_normalization_stats(Xp_train, method=norm)
+                Xp_train = sequence_utils.apply_normalization(Xp_train, pose_stats, method=norm)
+            if Xh_train.shape[-1] > 0:
+                hand_stats = sequence_utils.compute_normalization_stats(Xh_train, method=norm)
+                Xh_train = sequence_utils.apply_normalization(Xh_train, hand_stats, method=norm)
+        else:
+            Xp_train = Xh_train = None
         # Now that meta_s_val/meta_s_test exist, align val/test tabular rows
         try:
             windows_for_seq_val = [m['window'] for m in meta_s_val]
@@ -241,9 +287,12 @@ class MultimodalTrainer:
                 LOGGER.warning('Camera-derived labels differ from sensor-derived labels on training split')
         except Exception:
             pass
+        # include landmark branches in returned tuples when enabled
+        if use_landmarks:
+            return (Xc_train, Xs_train, Xp_train, Xh_train, Xt_train, y_train), (Xc_val, Xs_val, Xp_train, Xh_train, Xt_val, y_val), (Xc_test, Xs_test, Xp_train, Xh_train, Xt_test, y_test)
         return (Xc_train, Xs_train, Xt_train, y_train), (Xc_val, Xs_val, Xt_val, y_val), (Xc_test, Xs_test, Xt_test, y_test)
 
-    def build_model(self, camera_shape: Tuple[int, int], sensor_shape: Tuple[int, int], tabular_shape: Tuple[int]):
+    def build_model(self, camera_shape: Tuple[int, int], sensor_shape: Tuple[int, int], tabular_shape: Tuple[int], pose_shape: Optional[Tuple[int, int]] = None, hand_shape: Optional[Tuple[int, int]] = None):
         if not tf_available:
             raise RuntimeError('TensorFlow is required to build multimodal models')
         cfg = self.mm_cfg
@@ -295,6 +344,25 @@ class MultimodalTrainer:
             x_sens = keras.layers.LSTM(layer.get('units', 64), return_sequences=False)(x_sens)
         x_sens = keras.layers.Dense(64, activation='relu')(x_sens)
 
+        # optional landmark branches
+        pose_in = None
+        hand_in = None
+        x_pose = None
+        x_hand = None
+        use_landmarks = bool(cfg.get('use_landmark_sequences', False))
+        if use_landmarks and pose_shape is not None:
+            pose_in = keras.Input(shape=pose_shape, name='pose_landmarks')
+            x_pose = pose_in
+            for layer in cfg.get('pose_branch', {}).get('lstm_layers', [{'units':64}]):
+                x_pose = keras.layers.LSTM(layer.get('units', 64), return_sequences=False)(x_pose)
+            x_pose = keras.layers.Dense(32, activation='relu')(x_pose)
+        if use_landmarks and hand_shape is not None:
+            hand_in = keras.Input(shape=hand_shape, name='hand_landmarks')
+            x_hand = hand_in
+            for layer in cfg.get('hand_branch', {}).get('lstm_layers', [{'units':64}]):
+                x_hand = keras.layers.LSTM(layer.get('units', 64), return_sequences=False)(x_hand)
+            x_hand = keras.layers.Dense(32, activation='relu')(x_hand)
+
         # tabular branch
         tab_in = keras.Input(shape=tabular_shape, name='tabular')
         x_tab = tab_in
@@ -304,7 +372,12 @@ class MultimodalTrainer:
         merged = None
         # simple concat fusion
         if fusion_type == 'concat':
-            merged = keras.layers.concatenate([x_cam, x_sens, x_tab])
+            to_concat = [x_cam, x_sens, x_tab]
+            if x_pose is not None:
+                to_concat.append(x_pose)
+            if x_hand is not None:
+                to_concat.append(x_hand)
+            merged = keras.layers.concatenate(to_concat)
         # attention-based fusion: learn per-modality attention weights and weighted-sum
         elif fusion_type == 'attention':
             # scalar logits per modality
@@ -337,7 +410,12 @@ class MultimodalTrainer:
         for d in cfg.get('fusion_dense_layers', [128, 64]):
             merged = keras.layers.Dense(d, activation='relu')(merged)
         out = keras.layers.Dense(1, activation='sigmoid', name='out')(merged)
-        model = keras.Model(inputs=[cam_in, sens_in, tab_in], outputs=out, name=f'multimodal_h{self.horizon or "default"}')
+        inputs = [cam_in, sens_in, tab_in]
+        if pose_in is not None:
+            inputs.append(pose_in)
+        if hand_in is not None:
+            inputs.append(hand_in)
+        model = keras.Model(inputs=inputs, outputs=out, name=f'multimodal_h{self.horizon or "default"}')
         opt_name = cfg.get('optimizer', 'adam')
         lr = cfg.get('learning_rate', 1e-3)
         optimizer = model_compression.get_optimizer(opt_name, lr)

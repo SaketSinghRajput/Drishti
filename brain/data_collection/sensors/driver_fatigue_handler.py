@@ -50,6 +50,13 @@ try:
 except Exception:
     DrowsinessDetector = None  # type: ignore
     CameraInterface = None  # type: ignore
+try:
+    from data_collection.sensors.driver_fatigue_handler_hand_integration import make_grip_monitor_from_config
+except Exception:
+    try:
+        from .driver_fatigue_handler_hand_integration import make_grip_monitor_from_config
+    except Exception:
+        make_grip_monitor_from_config = None
 
 
 class DriverFatigueHandler(SensorHandler):
@@ -185,14 +192,34 @@ class DriverFatigueHandler(SensorHandler):
                     self._camera.no_face_frames_threshold = int(self.config.get("sensors.driver_fatigue", {}).get("no_face_frames_threshold", 5))
                 except Exception:
                     pass
-                self._detector = DrowsinessDetector(self.config.get("sensors.driver_fatigue", {}))
-                logger.info("DriverFatigueHandler: initialized CV detector and camera")
+                    # Pass the full config to DrowsinessDetector so mediapipe/task paths
+                    # nested under `mediapipe:` are available to the detector.
+                        # Pass full config so nested `mediapipe` section is visible to detectors
+                        self._detector = DrowsinessDetector(self.config)
+                    logger.info("DriverFatigueHandler: initialized CV detector and camera")
+                    # Initialize GripMonitor from config (if available)
+                    try:
+                        if make_grip_monitor_from_config is not None:
+                            self._grip_monitor = make_grip_monitor_from_config(self.config)
+                            # start background thread if enabled/available
+                            try:
+                                if getattr(self, "_grip_monitor", None) is not None:
+                                    self._grip_monitor.start()
+                            except Exception:
+                                logger.exception("Failed to start GripMonitor thread")
+                        else:
+                            self._grip_monitor = None
+                    except Exception:
+                        logger.exception("Failed to initialize GripMonitor")
+                        self._grip_monitor = None
             except Exception:
                 logger.exception("Failed to initialize CV detector; falling back to simulation")
                 self._camera = None
                 self._detector = None
         else:
             logger.debug("CV detection disabled or not available; using simulation mode")
+            # ensure grip monitor attribute exists even when CV disabled
+            self._grip_monitor = None
 
     def get_name(self) -> str:
         return "driver_fatigue"
@@ -216,6 +243,16 @@ class DriverFatigueHandler(SensorHandler):
                 prof = self._profiler.profile("frame_read")
                 prof.__enter__()
             frame = self._camera.read_frame()
+            # enqueue frame for grip monitor (non-blocking) if available
+            try:
+                if getattr(self, '_grip_monitor', None) is not None:
+                    try:
+                        self._grip_monitor.enqueue(frame)
+                    except Exception:
+                        # do not block main loop for grip errors
+                        logger.exception('GripMonitor enqueue failed')
+            except Exception:
+                pass
             if self._profiler:
                 prof.__exit__(None, None, None)
             if frame is None:
@@ -256,6 +293,10 @@ class DriverFatigueHandler(SensorHandler):
                     "drowsiness_score": 0.0,
                     "blink_rate": 0.0,
                     "perclos": 0.0,
+                    # iris-based perclos when available from detector
+                    "perclos_iris": float(res.get("perclos_iris", 0.0)),
+                    # backend used by detector (mediapipe_tflite, mediapipe_python, haar, etc.)
+                    "backend_used": str(res.get("backend_used", "unknown")),
                     "yawning_count": int(res.get("total_yawns", 0)),
                     "micro_sleep_flag": bool(res.get("micro_sleep_flag", False)),
                     "head_pose": {**head_pose, "confidence": confidence},
@@ -386,12 +427,29 @@ class DriverFatigueHandler(SensorHandler):
                 "fatigue_state": str(self._current_state),
                 "blink_rate": float(blink_rate),
                 "perclos": float(perclos),
+                # iris-based perclos from detector when available
+                "perclos_iris": float(res.get("perclos_iris", 0.0)),
+                "backend_used": str(res.get("backend_used", "unknown")),
                 "yawning_count": int(res.get("total_yawns", 0)),
                 "micro_sleep_flag": bool(res.get("micro_sleep_flag", False)),
                 "head_pose": {**head_pose, "confidence": confidence},
                 "ear": float(ear),
                 "mar": float(mar),
             }
+            # inject grip confidence if GripMonitor available
+            try:
+                gm = getattr(self, '_grip_monitor', None)
+                if gm is not None:
+                    try:
+                        state = gm.get_state()
+                        sample['grip_confidence'] = float(state.get('grip_confidence', 0.0))
+                    except Exception:
+                        sample['grip_confidence'] = 0.0
+                else:
+                    # absent monitor -> default sentinel
+                    sample['grip_confidence'] = 0.0
+            except Exception:
+                sample['grip_confidence'] = 0.0
             # periodic BLE broadcast while in DROWSY/MICROSLEEP
             try:
                 if getattr(self, "_ble_broadcast", None) is not None and self._ble_broadcast.enable:
@@ -424,6 +482,16 @@ class DriverFatigueHandler(SensorHandler):
             cam_status = self._camera.get_status()
         else:
             cam_status = None
+        # include grip monitor status if available
+        grip_status = None
+        try:
+            gm = getattr(self, '_grip_monitor', None)
+            if gm is not None:
+                st = gm.get_state()
+                grip_status = {'available': bool(st.get('available', False)), 'last_updated': st.get('last_updated')}
+        except Exception:
+            grip_status = None
+
         return {
             "status": status,
             "last_successful_read": self._health.last_successful_read.isoformat() if self._health.last_successful_read else None,
@@ -431,6 +499,7 @@ class DriverFatigueHandler(SensorHandler):
             "availability": self._health.availability_percent,
             "camera_status": cam_status,
             "latency_stats": self._profiler.to_dict() if self._profiler is not None else None,
+            "grip_monitor_status": grip_status,
         }
 
     def _classify_state(self, score: float) -> str:
@@ -581,5 +650,15 @@ class DriverFatigueHandler(SensorHandler):
                     self._alert_mgr.close()
                 except Exception:
                     pass
+        except Exception:
+            pass
+        # stop grip monitor if running
+        try:
+            gm = getattr(self, '_grip_monitor', None)
+            if gm is not None:
+                try:
+                    gm.stop()
+                except Exception:
+                    logger.exception('Failed to stop GripMonitor')
         except Exception:
             pass

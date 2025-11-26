@@ -26,16 +26,29 @@ except Exception:
 
 from data_collection.sensors.driver_fatigue_handler import DriverFatigueHandler
 from data_collection.sensors.fatigue_api import create_app
+import argparse
 
 
 def main():
     logging.basicConfig(level=logging.INFO)
+    p = argparse.ArgumentParser()
+    p.add_argument('--mediapipe', action='store_true', help='Enable MediaPipe TFLite task backends for detector')
+    args = p.parse_args()
+
     cfg = {}
     if ConfigLoader is not None:
         try:
             cfg = ConfigLoader().config
         except Exception:
             cfg = {}
+
+    # apply CLI override to enable mediapipe tasks if requested
+    if args.mediapipe:
+        try:
+            cfg.setdefault('sensors', {}).setdefault('driver_fatigue', {})['use_mediapipe_tasks'] = True
+            cfg.setdefault('mediapipe', {})['enabled'] = True
+        except Exception:
+            pass
 
     app = create_app(cfg)
     host = cfg.get("sensors", {}).get("driver_fatigue", {}).get("fatigue_api", {}).get("host", "0.0.0.0")

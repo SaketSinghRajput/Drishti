@@ -101,6 +101,44 @@ class CameraHandler(SensorHandler):
                 self._model = None
                 self.enable_simulation = True
 
+        # Optional MediaPipe TFLite pose backend initialization (config-gated)
+        self.enable_pose_detection = bool(self.cfg.get("enable_pose_detection", False))
+        self._mp_pose_detector = None
+        # optional pose enrichment toggles
+        self.enable_pedestrian_intent = bool(self.cfg.get("enable_pedestrian_intent", False))
+        self.enable_cyclist_lean = bool(self.cfg.get("enable_cyclist_lean", False))
+        self.pedestrian_intent_window = int(self.cfg.get("pedestrian_intent_velocity_window_frames", 5))
+        # store previous keypoints per object index for velocity/intent computation
+        self._prev_pose_keypoints = {}
+        try:
+            from data_collection.sensors.camera_handler_pose_enrichment import compute_pedestrian_intent, compute_cyclist_lean_angle
+        except Exception:
+            try:
+                from .camera_handler_pose_enrichment import compute_pedestrian_intent, compute_cyclist_lean_angle
+            except Exception:
+                compute_pedestrian_intent = None
+                compute_cyclist_lean_angle = None
+            if self.enable_pose_detection:
+                try:
+                    from brain.utils.mediapipe_loaders import MediaPipePoseDetector
+
+                    # Support nested mediapipe config under top-level `mediapipe.pose`
+                    try:
+                        mp_pose_cfg = self.config.get("mediapipe", {}).get("pose", {}) if hasattr(self.config, "get") else {}
+                    except Exception:
+                        mp_pose_cfg = {}
+
+                    det_path = str(self.cfg.get("pose_detection_model_path", "")) or mp_pose_cfg.get("detection_model_path") or mp_pose_cfg.get("detection_model_path")
+                    lm_path = str(self.cfg.get("pose_landmark_model_path", "")) or mp_pose_cfg.get("landmark_model_path") or mp_pose_cfg.get("landmark_model_path")
+                    if det_path:
+                        self._mp_pose_detector = MediaPipePoseDetector(det_path, landmark_path=lm_path, config=mp_pose_cfg or self.cfg)
+                        logger.info("CameraHandler: initialized MediaPipePoseDetector (%s)", det_path)
+                    else:
+                        logger.warning("CameraHandler: pose_detection enabled but model path not provided")
+                except Exception:
+                    logger.exception("Failed to initialize MediaPipePoseDetector; pose detection disabled")
+                    self._mp_pose_detector = None
+
         # persistent video capture (avoid opening/closing per-frame)
         self._cap = None
 
@@ -403,6 +441,84 @@ class CameraHandler(SensorHandler):
                     self._prev_frame_detections[i] = {"distance_m": dist}
                 except Exception:
                     continue
+
+                # If MediaPipe pose detector available and enabled, enrich person objects
+                try:
+                    if self._mp_pose_detector is not None:
+                            for idx, obj in enumerate(objects):
+                            try:
+                                if obj.get("class") != "person":
+                                    continue
+                                # convert pixel bbox to normalized bbox
+                                x1, y1, x2, y2 = obj.get("bbox_pixels", [0, 0, 0, 0])
+                                fw = float(self.width)
+                                fh = float(self.height)
+                                xmin = max(0.0, min(1.0, float(x1) / fw))
+                                ymin = max(0.0, min(1.0, float(y1) / fh))
+                                w = max(0.0, min(1.0, float(x2 - x1) / fw))
+                                h = max(0.0, min(1.0, float(y2 - y1) / fh))
+                                bbox_norm = (xmin, ymin, w, h)
+                                kps = self._mp_pose_detector.detect_landmarks(frame, bbox_norm)
+                                if not kps:
+                                    continue
+                                # compute simple pose metrics: average visibility/confidence (if available)
+                                try:
+                                    # landmark format is list of (x,y) normalized
+                                    avg_conf = 1.0
+                                    # walking_towards heuristic: check if hip y < knee y (approaching camera -> smaller y)
+                                    walking_towards = False
+                                    rel_heading = 0.0
+                                    # indices: shoulders 11/12, hips 23/24, knees 25/26
+                                    def _safe(idx):
+                                        return kps[idx] if idx < len(kps) else (0.0, 0.0)
+
+                                    lh = _safe(23)
+                                    rh = _safe(24)
+                                    lk = _safe(25)
+                                    rk = _safe(26)
+                                    # average hips and knees y coordinate in normalized frame
+                                    hip_y = ((lh[1] if lh else 0.0) + (rh[1] if rh else 0.0)) / 2.0
+                                    knee_y = ((lk[1] if lk else 0.0) + (rk[1] if rk else 0.0)) / 2.0
+                                    # if hip is higher (smaller y) than knee substantially, assume upright; walking_towards if hip_y < knee_y - small_margin
+                                    walking_towards = hip_y < (knee_y - 0.02)
+                                    rel_heading = 0.0
+                                except Exception:
+                                    walking_towards = False
+                                    rel_heading = 0.0
+                                # populate pose_data and optionally compute intent/lean
+                                pd = {
+                                    "keypoints": kps,
+                                    "walking_towards": bool(walking_towards),
+                                    "relative_heading": float(rel_heading),
+                                    "confidence": float(avg_conf),
+                                }
+                                # pedestrian intent
+                                try:
+                                    if self.enable_pedestrian_intent and compute_pedestrian_intent is not None:
+                                        prev_kps = self._prev_pose_keypoints.get(idx)
+                                        intent = compute_pedestrian_intent(prev_kps, kps, camera_velocity_window=int(self.pedestrian_intent_window))
+                                        pd['pedestrian_intent_score'] = float(intent)
+                                except Exception:
+                                    logger.exception('Failed to compute pedestrian intent')
+                                # cyclist lean
+                                try:
+                                    if obj.get('class') in ('bicycle', 'bike', 'cyclist') and self.enable_cyclist_lean and compute_cyclist_lean_angle is not None:
+                                        lean = compute_cyclist_lean_angle(kps)
+                                        pd['cyclist_lean_angle'] = float(lean)
+                                        pd['cyclist_maneuvering_flag'] = bool(lean > 15.0)
+                                except Exception:
+                                    logger.exception('Failed to compute cyclist lean')
+
+                                obj['pose_data'] = pd
+                                # update prev keypoints map
+                                try:
+                                    self._prev_pose_keypoints[idx] = kps
+                                except Exception:
+                                    pass
+                            except Exception:
+                                continue
+                except Exception:
+                    logger.exception("Error while enriching objects with pose data")
 
             # compute lane center offset from average of in-path objects
             lane_center_offset = 0.0
