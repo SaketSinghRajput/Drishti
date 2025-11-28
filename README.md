@@ -71,6 +71,18 @@ Add dashboard settings to `config/default_config.yaml` (the file now contains a 
 
 See `docs/dashboard.md` for full documentation.
 
+## Examples
+
+The `brain/examples/` directory contains runnable scripts demonstrating system features, grouped by function. See `brain/docs/examples_guide.md` for a full guide.
+
+Run all examples (sequential):
+
+```powershell
+python brain/scripts/run_all_examples.py --timeout 60
+```
+
+The examples runner writes `data/example_test_results.json` with a pass/fail summary.
+
 Feature categories produced by the extractor include:
 - Raw sensor aggregations (GPS speed/heading, IMU accelerations, vehicle controls)
 - Derived features (jerk, steering rate, speed deltas, lane offset trends)

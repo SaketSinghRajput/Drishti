@@ -192,26 +192,27 @@ class DriverFatigueHandler(SensorHandler):
                     self._camera.no_face_frames_threshold = int(self.config.get("sensors.driver_fatigue", {}).get("no_face_frames_threshold", 5))
                 except Exception:
                     pass
-                    # Pass the full config to DrowsinessDetector so mediapipe/task paths
-                    # nested under `mediapipe:` are available to the detector.
-                        # Pass full config so nested `mediapipe` section is visible to detectors
-                        self._detector = DrowsinessDetector(self.config)
-                    logger.info("DriverFatigueHandler: initialized CV detector and camera")
-                    # Initialize GripMonitor from config (if available)
-                    try:
-                        if make_grip_monitor_from_config is not None:
-                            self._grip_monitor = make_grip_monitor_from_config(self.config)
-                            # start background thread if enabled/available
-                            try:
-                                if getattr(self, "_grip_monitor", None) is not None:
-                                    self._grip_monitor.start()
-                            except Exception:
-                                logger.exception("Failed to start GripMonitor thread")
-                        else:
-                            self._grip_monitor = None
-                    except Exception:
-                        logger.exception("Failed to initialize GripMonitor")
+                # Pass full config so nested `mediapipe` section is visible to detectors
+                try:
+                    self._detector = DrowsinessDetector(self.config)
+                except Exception:
+                    self._detector = None
+                logger.info("DriverFatigueHandler: initialized CV detector and camera")
+                # Initialize GripMonitor from config (if available)
+                try:
+                    if make_grip_monitor_from_config is not None:
+                        self._grip_monitor = make_grip_monitor_from_config(self.config)
+                        # start background thread if enabled/available
+                        try:
+                            if getattr(self, "_grip_monitor", None) is not None:
+                                self._grip_monitor.start()
+                        except Exception:
+                            logger.exception("Failed to start GripMonitor thread")
+                    else:
                         self._grip_monitor = None
+                except Exception:
+                    logger.exception("Failed to initialize GripMonitor")
+                    self._grip_monitor = None
             except Exception:
                 logger.exception("Failed to initialize CV detector; falling back to simulation")
                 self._camera = None

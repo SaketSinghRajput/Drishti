@@ -67,14 +67,24 @@ def main():
     p.add_argument('--mode', choices=['py','tflite'], default='tflite')
     p.add_argument('--model', default='')
     args = p.parse_args()
-
     if args.mode == 'py':
         times = run_py_mediapipe(frames=50)
+        if times is None:
+            # dependency missing — exit cleanly with success code
+            print('Python MediaPipe unavailable; exiting')
+            import sys
+
+            sys.exit(0)
     else:
         if not args.model:
             print('Provide --model path to a MediaPipe TFLite task model')
             return
         times = run_tflite_task(args.model, frames=50)
+        if times is None:
+            print('TFLite task model failed to load or runtime missing; exiting')
+            import sys
+
+            sys.exit(0)
 
     print('Summary:', summarize(times))
 

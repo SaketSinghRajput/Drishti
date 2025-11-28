@@ -445,7 +445,7 @@ class CameraHandler(SensorHandler):
                 # If MediaPipe pose detector available and enabled, enrich person objects
                 try:
                     if self._mp_pose_detector is not None:
-                            for idx, obj in enumerate(objects):
+                        for idx, obj in enumerate(objects):
                             try:
                                 if obj.get("class") != "person":
                                     continue

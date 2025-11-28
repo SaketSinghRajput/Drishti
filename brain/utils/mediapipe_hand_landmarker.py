@@ -20,7 +20,7 @@ If the model or interpreter fails to initialize, methods return empty lists
 and log warnings — callers should handle missing results gracefully.
 """
 
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Any, Dict
 import logging
 import numpy as np
 import cv2
@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 
 try:
     # Lazy import to keep runtime flexible
-    import tflite_runtime.interpreter as tflite
+    import tflite_runtime.interpreter as tflite  # type: ignore[import]
 except Exception:
     try:
-        import tensorflow as tf
+        import tensorflow as tf  # type: ignore[import]
         tflite = tf.lite
     except Exception:
         tflite = None
@@ -47,12 +47,12 @@ class MediaPipeHandLandmarker:
         config: optional dict for inference settings (input_size etc.)
     """
 
-    def __init__(self, model_path: str, config: Optional[dict] = None):
+    def __init__(self, model_path: str, config: Optional[Dict[str, Any]] = None):
         self.model_path = model_path
-        self._config = config or {}
-        self._interp = None
-        self._input_details = None
-        self._output_details = None
+        self._config: Dict[str, Any] = config or {}
+        self._interp: Optional[Any] = None
+        self._input_details: Optional[Any] = None
+        self._output_details: Optional[Any] = None
         self._input_size = tuple(self._config.get("input_size", (224, 224)))
 
         if not os.path.isfile(self.model_path):

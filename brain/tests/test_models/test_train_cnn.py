@@ -6,7 +6,7 @@ try:
 except Exception:
     tf_available = False
 
-from models.train_cnn import CNNTrainer
+from brain.models.train_cnn import CNNTrainer
 
 
 def test_build_model_shape():

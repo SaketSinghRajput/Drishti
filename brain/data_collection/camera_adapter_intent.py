@@ -8,8 +8,8 @@ from typing import List, Dict, Any
 import numpy as np
 
 
-def _safe_get(obj: Dict[str, Any], path: List[str], default=None):
-    cur = obj
+def _safe_get(obj: Dict[str, Any], path: List[str], default: Any = None) -> Any:
+    cur: Any = obj
     try:
         for p in path:
             cur = cur.get(p, {})

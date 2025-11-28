@@ -4,6 +4,7 @@ Contains EAR/MAR computations, head-pose helpers, and IR preprocessing.
 """
 from __future__ import annotations
 
+import logging
 import cv2
 import numpy as np
 from typing import List, Tuple, Dict
@@ -84,13 +85,22 @@ def get_3d_face_model() -> List[Tuple[float, float, float]]:
 def get_head_pose(landmarks_2d: List[Tuple[float, float]], frame_width: int, frame_height: int) -> Dict[str, float]:
     """Estimate head pose (pitch, yaw, roll) from 2D landmarks using solvePnP.
 
-    Expects landmarks_2d to contain at least indices for nose, left eye,
-    right eye, left mouth corner, right mouth corner. If insufficient
-    landmarks are provided, returns zeros.
+    Notes:
+      - This routine is designed for MediaPipe-style landmark layouts and prefers
+        indices [1, 33, 263, 61, 291, 199] (nose, eyes, mouth corners, chin).
+      - If the provided `landmarks_2d` list does not contain the MediaPipe indices
+        required this function will return a safe default head-pose of zeros with
+        `confidence: 0.0` rather than raising. Callers that supply non-MediaPipe
+        landmark formats should either remap their points or treat a zeroed
+        head-pose as "unknown".
+
+    Returns:
+      dict with keys: `pitch`, `yaw`, `roll`, `confidence`.
     """
     try:
-        import cv2
-        import numpy as np
+        # cv2 / numpy are used heavily in this routine; ensure they are available
+        import cv2  # type: ignore
+        import numpy as np  # type: ignore
     except Exception:
         return {"pitch": 0.0, "yaw": 0.0, "roll": 0.0, "confidence": 0.0}
 
@@ -103,37 +113,43 @@ def get_head_pose(landmarks_2d: List[Tuple[float, float]], frame_width: int, fra
             x, y = landmarks_2d[idx]
             img_pts.append([float(x), float(y)])
         else:
-            # not enough landmarks available
+            # not enough landmarks available — return safe default
             return {"pitch": 0.0, "yaw": 0.0, "roll": 0.0, "confidence": 0.0}
 
-    img_pts = np.array(img_pts, dtype=np.float64)
-    focal_length = frame_width
-    center = (frame_width / 2.0, frame_height / 2.0)
-    camera_matrix = np.array([[focal_length, 0, center[0]], [0, focal_length, center[1]], [0, 0, 1]], dtype=np.float64)
-    dist_coeffs = np.zeros((4, 1))
+    try:
+        img_pts = np.array(img_pts, dtype=np.float64)
+        focal_length = frame_width
+        center = (frame_width / 2.0, frame_height / 2.0)
+        camera_matrix = np.array([[focal_length, 0, center[0]], [0, focal_length, center[1]], [0, 0, 1]], dtype=np.float64)
+        dist_coeffs = np.zeros((4, 1))
 
-    success, rvec, tvec = cv2.solvePnP(model_pts, img_pts, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
-    if not success:
+        success, rvec, tvec = cv2.solvePnP(model_pts, img_pts, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
+        if not success:
+            return {"pitch": 0.0, "yaw": 0.0, "roll": 0.0, "confidence": 0.0}
+
+        # convert rotation vector to Euler angles
+        R, _ = cv2.Rodrigues(rvec)
+        sy = (R[0, 0] ** 2 + R[1, 0] ** 2) ** 0.5
+        singular = sy < 1e-6
+        if not singular:
+            x = np.arctan2(R[2, 1], R[2, 2])
+            y = np.arctan2(-R[2, 0], sy)
+            z = np.arctan2(R[1, 0], R[0, 0])
+        else:
+            x = np.arctan2(-R[1, 2], R[1, 1])
+            y = np.arctan2(-R[2, 0], sy)
+            z = 0
+
+        # convert radians to degrees
+        pitch = float(np.degrees(x))
+        yaw = float(np.degrees(y))
+        roll = float(np.degrees(z))
+        return {"pitch": pitch, "yaw": yaw, "roll": roll, "confidence": 1.0}
+    except Exception:
+        # Catch OpenCV / numeric errors and return a safe default instead
+        logger = logging.getLogger(__name__)
+        logger.exception("get_head_pose: solvePnP or pose conversion failed")
         return {"pitch": 0.0, "yaw": 0.0, "roll": 0.0, "confidence": 0.0}
-
-    # convert rotation vector to Euler angles
-    R, _ = cv2.Rodrigues(rvec)
-    sy = (R[0, 0] ** 2 + R[1, 0] ** 2) ** 0.5
-    singular = sy < 1e-6
-    if not singular:
-        x = np.arctan2(R[2, 1], R[2, 2])
-        y = np.arctan2(-R[2, 0], sy)
-        z = np.arctan2(R[1, 0], R[0, 0])
-    else:
-        x = np.arctan2(-R[1, 2], R[1, 1])
-        y = np.arctan2(-R[2, 0], sy)
-        z = 0
-
-    # convert radians to degrees
-    pitch = float(np.degrees(x))
-    yaw = float(np.degrees(y))
-    roll = float(np.degrees(z))
-    return {"pitch": pitch, "yaw": yaw, "roll": roll, "confidence": 1.0}
 
 
 def is_blink(ear: float, threshold: float, duration_ms: int) -> bool:

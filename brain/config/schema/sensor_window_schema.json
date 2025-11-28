@@ -76,6 +76,9 @@
         "grip_confidence_mean": {"type": "number", "minimum": 0, "maximum": 1, "description": "Mean confidence that driver hands are on steering wheel"},
         "grip_confidence_std": {"type": "number", "minimum": 0, "description": "Stddev of grip confidence"},
         "grip_confidence_min": {"type": "number", "minimum": 0, "maximum": 1},
+        "grip_confidence": {"type": "number", "minimum": 0, "maximum": 1, "description": "Instantaneous grip confidence (0-1)"},
+        "backend_used": {"type": "string", "description": "Backend used to compute driver fatigue (e.g., mediapipe_tflite, tflite, opencv)"},
+        "perclos_iris": {"type": "number", "minimum": 0, "maximum": 1, "description": "PERCLOS computed from iris landmarks"},
         "sudden_grip_loss_flag": {"type": "boolean", "description": "Flag indicating sudden grip loss in window"},
         "no_grip_duration_s": {"type": "number", "minimum": 0, "description": "Longest continuous duration without grip in seconds"}
       },

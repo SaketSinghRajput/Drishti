@@ -27,7 +27,7 @@ Usage (example integration snippet):
 import threading
 import queue
 import time
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union
 import logging
 
 import numpy as np
@@ -46,13 +46,21 @@ class GripMonitor:
         max_queue: max frames to buffer (default 2)
     """
 
-    def __init__(self, model_path: str, enable_parallel: bool = True, max_queue: int = 2, config: Optional[dict] = None):
+    def __init__(self, model_path: str, enable_parallel: bool = True, max_queue: int = 2, config: Optional[Dict[str, Any]] = None):
         self._model_path = model_path
         self._config = config or {}
         self._hand = MediaPipeHandLandmarker(model_path, config=self._config)
-        self._queue: queue.Queue = queue.Queue(maxsize=max_queue)
+        # Typed queue for numpy frames
+        self._queue: queue.Queue[np.ndarray] = queue.Queue(maxsize=max_queue)
         self._state_lock = threading.Lock()
-        self._grip_state: Dict[str, Any] = {'grip_confidence': 0.0, 'last_updated': 0.0, 'available': self._hand.is_available()}
+        # Narrower grip state typing and detection flag
+        self._grip_state: Dict[str, Union[float, bool, int]] = {
+            'grip_confidence': 0.0,
+            'last_updated': 0.0,
+            'available': self._hand.is_available(),
+            'detections_seen': 0,
+            'detection_active': False,
+        }
         self._thread: Optional[threading.Thread] = None
         self._running = threading.Event()
         self._enable_parallel = enable_parallel
@@ -76,7 +84,7 @@ class GripMonitor:
             pass
         logger.debug("GripMonitor stopped")
 
-    def enqueue(self, frame: np.ndarray):
+    def enqueue(self, frame: np.ndarray) -> None:
         """Attempt to enqueue a frame for background processing (non-blocking)."""
         try:
             self._queue.put_nowait(frame)
@@ -103,7 +111,7 @@ class GripMonitor:
             except Exception:
                 logger.exception("Exception in GripMonitor processing")
 
-    def _process_frame(self, frame: np.ndarray):
+    def _process_frame(self, frame: np.ndarray) -> None:
         """Run detection on full frame: attempt to find hand bboxes by simple heuristic.
 
         Note: The repository likely already has a hand detection path; to keep this
@@ -136,11 +144,15 @@ class GripMonitor:
                 best_conf = compute_grip_confidence_from_keypoints(kps, frame_size=(w, h))
                 best_kps = kps
 
-        # Update state
+        # Update state and detection flags
         with self._state_lock:
             self._grip_state['grip_confidence'] = float(best_conf)
             self._grip_state['last_updated'] = time.time()
             self._grip_state['available'] = self._hand.is_available()
+            # increment detections_seen when we have a non-zero confidence
+            if best_conf > 0.0:
+                self._grip_state['detections_seen'] = int(self._grip_state.get('detections_seen', 0)) + 1
+                self._grip_state['detection_active'] = True
             self._grip_state['keypoints_count'] = len(best_kps)
 
     def is_available(self) -> bool:
@@ -149,13 +161,27 @@ class GripMonitor:
 
 # Convenience factory used by handlers
 
-def make_grip_monitor_from_config(cfg: dict) -> GripMonitor:
-    mp = cfg.get('mediapipe', {})
+def make_grip_monitor_from_config(cfg: Dict[str, Any]) -> GripMonitor:
+    """Factory that inspects both the `mediapipe.hand_landmark` and
+    `sensors.driver_fatigue.hand_landmark` trees to decide whether to enable
+    the GripMonitor. This avoids inconsistent toggles where one tree is
+    enabled but the other is not.
+    """
+    mp = cfg.get('mediapipe', {}) if isinstance(cfg, dict) else {}
     hand_cfg = mp.get('hand_landmark', {})
-    enable = hand_cfg.get('enabled', False)
+    # sensors-level override (legacy) under sensors.driver_fatigue.hand_landmark
+    srf = cfg.get('sensors', {}).get('driver_fatigue', {}) if isinstance(cfg, dict) else {}
+    s_hand = srf.get('hand_landmark', {})
+
+    # permissive check: accept either `enabled` (mediapipe) or `enable` (sensors)
+    enable_mp = bool(hand_cfg.get('enabled', False))
+    enable_sensors = bool(s_hand.get('enable', False) or s_hand.get('enabled', False))
+    enable = enable_mp or enable_sensors
+
     model_path = hand_cfg.get('model_path', 'brain/models/hand_landmark_lite.tflite')
-    parallel = hand_cfg.get('parallel_inference', True)
+    parallel = bool(hand_cfg.get('parallel_inference', True))
+
     if not enable:
-        return GripMonitor(model_path=model_path, enable_parallel=False)
-    gm = GripMonitor(model_path=model_path, enable_parallel=parallel)
+        return GripMonitor(model_path=model_path, enable_parallel=False, config=cfg)
+    gm = GripMonitor(model_path=model_path, enable_parallel=parallel, config=cfg)
     return gm

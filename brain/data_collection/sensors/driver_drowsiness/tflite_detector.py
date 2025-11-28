@@ -94,6 +94,27 @@ class TFLiteDrowsinessDetector:
         self._yawn_total = 0
         self._micro_sleep_flag = False
 
+        # performance tuning: optional early resize and frame skipping
+        # `input_resolution` may be a list/tuple like [width, height]
+        ir = self.config.get("input_resolution") if isinstance(self.config, dict) else None
+        try:
+            self.input_resolution = tuple(int(x) for x in ir) if ir else None
+        except Exception:
+            self.input_resolution = None
+        # skip inference on intermediate frames (0 means no skipping)
+        self.frame_skip = int(self.config.get("tflite_frame_skip", 0))
+        self._frame_idx = 0
+
+        # simple slow-inference detector + cache: if inference is slow for
+        # several consecutive frames, start reusing last result until it
+        # recovers. thresholds configurable via config.
+        self._last_result: Optional[Dict[str, Any]] = None
+        self._last_inference_time: Optional[float] = None
+        self._inference_slow_threshold = float(self.config.get("inference_slow_threshold_s", 0.2))
+        self._slow_inference_count = 0
+        self._slow_inference_limit = int(self.config.get("inference_slow_limit", 3))
+        self._skip_inference = False
+
     def get_model_info(self) -> Dict[str, Any]:
         if not self._available:
             return {"available": False}
@@ -226,6 +247,12 @@ class TFLiteDrowsinessDetector:
                         }
                         if perclos_iris is not None:
                             out["perclos_iris"] = float(perclos_iris)
+                        try:
+                            self._last_result = out
+                            import time
+                            self._last_inference_time = time.time()
+                        except Exception:
+                            pass
                         return out
                     except Exception:
                         logger.exception("mediapipe tasks path failed, falling back to generic tflite or heuristics")
@@ -250,8 +277,24 @@ class TFLiteDrowsinessDetector:
                         "micro_sleep_flag": bool(self._micro_sleep_flag),
                     }
 
-                # Basic preprocess: resize to input shape and normalize to [0,1]
+                # Basic preprocess: optional early resize, frame skipping, and normalize to [0,1]
+                # handle simple frame-skip behavior (reuse last result for skipped frames)
+                self._frame_idx += 1
+                if self.frame_skip and (self._frame_idx % (self.frame_skip + 1)) != 0 and self._last_result is not None:
+                    return self._last_result
+                if self._skip_inference and self._last_result is not None:
+                    return self._last_result
+
+                # perform optional early resize to reduce upstream cost
                 inp = frame
+                if self.input_resolution is not None:
+                    try:
+                        target_w, target_h = int(self.input_resolution[0]), int(self.input_resolution[1])
+                        inp = cv2.resize(frame, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
+                    except Exception:
+                        logger.exception("early input_resolution resize failed; falling back to full frame")
+                        inp = frame
+
                 inp_det = self._input_details[0]
                 # expect input shape like [1, H, W, C]
                 h = int(inp_det["shape"][1])
@@ -271,9 +314,26 @@ class TFLiteDrowsinessDetector:
                 img_resized = img_resized.astype(np.float32) / 255.0
                 # set tensor
                 self._interpreter.set_tensor(self._input_details[0]["index"], np.expand_dims(img_resized.astype(self._input_details[0]["dtype"]), axis=0))
+                # time the invoke to detect slow inference
+                import time
+                start_inf = time.time()
                 self._interpreter.invoke()
-                # simplistic handling: try to read first output as landmarks
+                inf_dur = time.time() - start_inf
+                # read outputs
                 out0 = self._interpreter.get_tensor(self._output_details[0]["index"]) if self._output_details else None
+                # update slow-inference counters/cache
+                try:
+                    if inf_dur > self._inference_slow_threshold:
+                        self._slow_inference_count += 1
+                    else:
+                        self._slow_inference_count = 0
+                    if self._slow_inference_count >= self._slow_inference_limit:
+                        self._skip_inference = True
+                    else:
+                        self._skip_inference = False
+                except Exception:
+                    # be defensive — never let the monitoring break inference
+                    logger.exception("error updating slow-inference counters")
                 # if outputs do not match expected form, return safe defaults
                 if out0 is None:
                     raise RuntimeError("TFLite model produced no outputs")
@@ -289,7 +349,7 @@ class TFLiteDrowsinessDetector:
 
                 if not lm:
                     # fallback
-                    return {
+                    out = {
                         "ear": 0.0,
                         "mar": 0.0,
                         "head_pose": {"pitch": 0.0, "yaw": 0.0, "roll": 0.0},
@@ -301,6 +361,13 @@ class TFLiteDrowsinessDetector:
                         "total_yawns": int(self._yawn_total),
                         "micro_sleep_flag": bool(self._micro_sleep_flag),
                     }
+                    try:
+                        self._last_result = out
+                        import time
+                        self._last_inference_time = time.time()
+                    except Exception:
+                        pass
+                    return out
 
                 # compute EAR/MAR using existing utils by selecting eye/mouth landmarks
                 # For robust mapping, reuse the indices used by MediaPipe when possible
@@ -318,7 +385,16 @@ class TFLiteDrowsinessDetector:
                     ear = 0.0
                     mar = 0.0
 
-                head_pose = utils.get_head_pose(lm, frame.shape[1], frame.shape[0])
+                # Only attempt full MediaPipe-style head-pose when landmark layout
+                # resembles MediaPipe outputs (contains high-index landmarks).
+                # Otherwise return a documented default to avoid solvePnP crashes
+                # for compact custom landmark layouts.
+                if lm and len(lm) > 291:
+                    head_pose = utils.get_head_pose(lm, frame.shape[1], frame.shape[0])
+                else:
+                    # Fallback: documented default head-pose when landmark layout
+                    # is unknown or too small for MediaPipe indices.
+                    head_pose = {"pitch": 0.0, "yaw": 0.0, "roll": 0.0, "confidence": 0.0}
 
                 # Temporal event detection: simple reuse of thresholds
                 import time
@@ -350,7 +426,7 @@ class TFLiteDrowsinessDetector:
                 else:
                     self._mouth_open_start = None
 
-                return {
+                out = {
                     "ear": float(ear),
                     "mar": float(mar),
                     "head_pose": head_pose,
@@ -362,6 +438,13 @@ class TFLiteDrowsinessDetector:
                     "total_yawns": int(self._yawn_total),
                     "micro_sleep_flag": bool(self._micro_sleep_flag),
                 }
+                try:
+                    self._last_result = out
+                    import time
+                    self._last_inference_time = time.time()
+                except Exception:
+                    pass
+                return out
             except Exception:
                 logger.exception("TFLite detector inference failed")
                 return {

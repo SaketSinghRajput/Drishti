@@ -1,5 +1,6 @@
 import numpy as np
 
+import pytest
 try:
     import tensorflow as tf
     tf_available = True
@@ -32,7 +33,7 @@ class DummyConfig:
 
 def test_build_multimodal_with_landmarks():
     if not tf_available:
-        return
+        pytest.skip("TensorFlow not available for multimodal training tests")
     cfg = DummyConfig()
     trainer = MultimodalTrainer(cfg)
     # camera_shape: (seq_len, channels)

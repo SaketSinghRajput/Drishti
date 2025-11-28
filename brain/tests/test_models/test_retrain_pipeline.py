@@ -2,7 +2,7 @@ import os
 import tempfile
 import json
 
-from models.retrain_pipeline import RetrainingPipeline
+from brain.models.retrain_pipeline import RetrainingPipeline
 from config.config_loader import ConfigLoader
 
 

@@ -1,6 +1,8 @@
 import pytest
 import numpy as np
 import types
+from _pytest.monkeypatch import MonkeyPatch
+from pathlib import Path
 
 from brain.utils.mediapipe_hand_landmarker import MediaPipeHandLandmarker
 
@@ -35,11 +37,11 @@ class FakeInterpreter:
 
 
 @pytest.fixture
-def frame():
+def frame() -> np.ndarray:
     return np.random.randint(0, 255, (480, 640, 3), dtype=np.uint8)
 
 
-def test_init_success(monkeypatch, tmp_path):
+def test_init_success(monkeypatch: MonkeyPatch, tmp_path: Path):
     # patch tflite interpreter creation
     import brain.utils.mediapipe_hand_landmarker as mdl
 
@@ -50,7 +52,7 @@ def test_init_success(monkeypatch, tmp_path):
     assert m.is_available()
 
 
-def test_init_failure(monkeypatch, tmp_path):
+def test_init_failure(monkeypatch: MonkeyPatch, tmp_path: Path):
     import brain.utils.mediapipe_hand_landmarker as mdl
     def bad_interp(path):
         raise RuntimeError('bad')
@@ -61,7 +63,7 @@ def test_init_failure(monkeypatch, tmp_path):
     assert not m.is_available()
 
 
-def test_detect_hand_landmarks_success(monkeypatch, frame, tmp_path):
+def test_detect_hand_landmarks_success(monkeypatch: MonkeyPatch, frame: np.ndarray, tmp_path: Path):
     import brain.utils.mediapipe_hand_landmarker as mdl
     class OkInterp(FakeInterpreter):
         def get_tensor(self, idx):
@@ -80,7 +82,7 @@ def test_detect_hand_landmarks_success(monkeypatch, frame, tmp_path):
     assert len(kps) == 21
 
 
-def test_detect_hand_landmarks_empty_crop(monkeypatch, frame, tmp_path):
+def test_detect_hand_landmarks_empty_crop(monkeypatch: MonkeyPatch, frame: np.ndarray, tmp_path: Path):
     import brain.utils.mediapipe_hand_landmarker as mdl
     monkeypatch.setattr(mdl, 'tflite', types.SimpleNamespace(Interpreter=lambda model_path: FakeInterpreter()))
     p = tmp_path / 'm.tflite'
@@ -91,7 +93,7 @@ def test_detect_hand_landmarks_empty_crop(monkeypatch, frame, tmp_path):
     assert kps == []
 
 
-def test_detect_hand_landmarks_invoke_failure(monkeypatch, frame, tmp_path):
+def test_detect_hand_landmarks_invoke_failure(monkeypatch: MonkeyPatch, frame: np.ndarray, tmp_path: Path):
     import brain.utils.mediapipe_hand_landmarker as mdl
     class BadInterp(FakeInterpreter):
         def invoke(self):
@@ -104,7 +106,7 @@ def test_detect_hand_landmarks_invoke_failure(monkeypatch, frame, tmp_path):
     assert kps == []
 
 
-def test_keypoint_normalization(monkeypatch, frame, tmp_path):
+def test_keypoint_normalization(monkeypatch: MonkeyPatch, frame: np.ndarray, tmp_path: Path):
     import brain.utils.mediapipe_hand_landmarker as mdl
     class CInterp(FakeInterpreter):
         def get_tensor(self, idx):

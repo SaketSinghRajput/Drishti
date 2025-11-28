@@ -1,6 +1,11 @@
 sensors:
   driver_fatigue:
     enable_cv_detection: true
+    # Performance tuning (production): early downscale and inference-skipping
+    input_resolution: [320, 240]
+    tflite_frame_skip: 0
+    inference_slow_threshold_s: 0.2
+    inference_slow_limit: 3
     # Prefer MediaPipe TFLite task models for low-latency inference when available
     use_mediapipe_tasks: true
     # Optional generic single-model TFLite path (legacy fallback)

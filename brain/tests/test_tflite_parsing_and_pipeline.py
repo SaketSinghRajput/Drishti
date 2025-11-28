@@ -40,7 +40,7 @@ class FakeInterpreter:
             return out
         # iris: small set of points
         if "iris" in mp:
-            out = np.array([[[0.5, 0.5], [0.52, 0.5], [0.48, 0.5], [0.5, 0.52], [0.5, 0.48]]]], dtype=np.float32)
+            out = np.array([[[0.5, 0.5], [0.52, 0.5], [0.48, 0.5], [0.5, 0.52], [0.5, 0.48]]], dtype=np.float32)
             return out
         # pose detection: return one bbox row
         if "pose_detection" in mp:

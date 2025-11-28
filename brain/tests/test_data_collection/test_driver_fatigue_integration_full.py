@@ -754,15 +754,15 @@ def test_full_fatigue_flow(mock_config, mock_telemetry, monkeypatch):
     handler._camera = cam
     handler._detector = det
 
-        # run several reads to allow state transition
-        for _ in range(30):
-            handler.read()
+    # run several reads to allow state transition
+    for _ in range(30):
+        handler.read()
 
-        # allow background central push to execute
-        time.sleep(0.1)
+    # allow background central push to execute
+    time.sleep(0.1)
 
-        # verify BLE outbox wrote an entry (allow a short grace for background write)
-        outbox = Path(mock_config["sensors"]["driver_fatigue"]["ble_broadcast"]["outbox_path"])
+    # verify BLE outbox wrote an entry (allow a short grace for background write)
+    outbox = Path(mock_config["sensors"]["driver_fatigue"]["ble_broadcast"]["outbox_path"])
     for _ in range(20):
         if outbox.exists():
             break
@@ -774,41 +774,41 @@ def test_full_fatigue_flow(mock_config, mock_telemetry, monkeypatch):
     pkt = json.loads(lines[-1])
     assert pkt.get("state") in ("DROWSY", "MICROSLEEP")
 
-        # verify DB row exists (use handler's logger path)
-        assert getattr(handler, "_fatigue_logger", None) is not None
-        db_path = handler._fatigue_logger.db_path
-        conn = sqlite3.connect(db_path)
-        cur = conn.cursor()
-        cur.execute("SELECT state, score, vehicle_hash FROM fatigue_events ORDER BY id DESC LIMIT 1")
-        row = cur.fetchone()
-        assert row is not None
-        assert row[0] in ("DROWSY", "MICROSLEEP")
+    # verify DB row exists (use handler's logger path)
+    assert getattr(handler, "_fatigue_logger", None) is not None
+    db_path = handler._fatigue_logger.db_path
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+    cur.execute("SELECT state, score, vehicle_hash FROM fatigue_events ORDER BY id DESC LIMIT 1")
+    row = cur.fetchone()
+    assert row is not None
+    assert row[0] in ("DROWSY", "MICROSLEEP")
 
-        # verify API state updated
-        api = get_global_state()
-        status = api.get_status()
-        assert status.get("state") in ("DROWSY", "MICROSLEEP")
+    # verify API state updated
+    api = get_global_state()
+    status = api.get_status()
+    assert status.get("state") in ("DROWSY", "MICROSLEEP")
 
-        # verify central push was attempted and contains vehicle_hash
-        # support both real responses and shim
-        calls_list = getattr(rsps, "calls", None)
-        if calls_list is None:
-            # try to see if requests.post monkeypatched shim recorded calls
-            # the shim sets monkeypatched requests.post to record on rsps
-            calls_list = getattr(rsps, "calls", None) or []
+    # verify central push was attempted and contains vehicle_hash
+    # support both real responses and shim
+    calls_list = getattr(rsps, "calls", None)
+    if calls_list is None:
+        # try to see if requests.post monkeypatched shim recorded calls
+        # the shim sets monkeypatched requests.post to record on rsps
+        calls_list = getattr(rsps, "calls", None) or []
 
-        assert len(calls_list) >= 1
-        # extract body
-        first_call = calls_list[0]
-        body_text = getattr(first_call.request, "body", None)
-        if isinstance(body_text, (bytes, bytearray)):
-            body_text = body_text.decode("utf-8")
-        body = json.loads(body_text) if body_text else {}
-        assert body.get("state") in ("DROWSY", "MICROSLEEP")
-        assert "vehicle_hash" in body
+    assert len(calls_list) >= 1
+    # extract body
+    first_call = calls_list[0]
+    body_text = getattr(first_call.request, "body", None)
+    if isinstance(body_text, (bytes, bytearray)):
+        body_text = body_text.decode("utf-8")
+    body = json.loads(body_text) if body_text else {}
+    assert body.get("state") in ("DROWSY", "MICROSLEEP")
+    assert "vehicle_hash" in body
 
-        # verify telemetry was called for high-score logging
-        assert mock_telemetry.log_prediction.called
+    # verify telemetry was called for high-score logging
+    assert mock_telemetry.log_prediction.called
 
 
 def test_graceful_degradation(tmp_path):

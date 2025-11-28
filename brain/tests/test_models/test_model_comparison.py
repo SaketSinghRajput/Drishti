@@ -1,5 +1,5 @@
 import numpy as np
-from models.model_comparison import ModelComparator
+from brain.models.model_comparison import ModelComparator
 
 
 def test_compare_metrics_aggregates():

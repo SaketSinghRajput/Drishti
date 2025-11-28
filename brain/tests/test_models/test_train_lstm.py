@@ -6,7 +6,7 @@ try:
 except Exception:
     tf_available = False
 
-from models.train_lstm import LSTMTrainer
+from brain.models.train_lstm import LSTMTrainer
 
 
 def test_build_model_shape(tmp_path):
@@ -51,7 +51,7 @@ def test_build_model_shape(tmp_path):
 
 def test_train_emits_tflite_when_export_requested(tmp_path, monkeypatch):
     # Setup fake trainer with a model that has a fit() method
-    from models.train_lstm import LSTMTrainer
+    from brain.models.train_lstm import LSTMTrainer
     import numpy as _np
 
     class FakeModel:

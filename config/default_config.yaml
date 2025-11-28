@@ -1,0 +1,20 @@
+# Minimal config for tests
+model:
+  prediction_horizon_s: 1
+sensors:
+  camera:
+    enable_simulation: false
+    resolution:
+      width: 640
+      height: 480
+    fps: 15
+  driver_fatigue:
+    camera_resolution:
+      width: 320
+      height: 240
+    sample_rate: 5
+
+mediapipe:
+  enabled: true
+  model_complexity: 0
+  tflite_num_threads: 1

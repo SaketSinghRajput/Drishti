@@ -49,6 +49,8 @@ def main(argv=None):
     p.add_argument("--num-samples", type=int, default=10)
     p.add_argument("--scenario", choices=["normal", "drowsy", "traffic", "weather", "accident"], default="normal")
     p.add_argument("--trip-length", type=int, default=1)
+    p.add_argument("--labeled", action="store_true", help="Generate labeled windows (adds label field with positive rate)")
+    p.add_argument("--positive-rate", type=float, default=0.1, help="Positive label rate when --labeled is set (0-1)")
     p.add_argument("--seed", type=int, default=None)
     args = p.parse_args(argv)
 
@@ -62,6 +64,9 @@ def main(argv=None):
         base = now + timedelta(seconds=s * args.trip_length)
         for t in range(args.trip_length):
             wnd = random_window(base + timedelta(seconds=t), vehicle_hash=f"vh_{s}", scenario=args.scenario)
+            if args.labeled:
+                is_pos = random.random() < float(args.positive_rate)
+                wnd["label"] = {"accident_within_10s": bool(is_pos), "accident_type": ("collision" if is_pos else "none"), "near_miss_flag": False, "accident_severity": ("severe" if is_pos else "none")}
             fname = os.path.join(args.output_dir, f"window_{s}_{t}.json")
             with open(fname, "w", encoding="utf-8") as f:
                 json.dump(wnd, f, indent=2)

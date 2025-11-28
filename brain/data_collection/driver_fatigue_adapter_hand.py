@@ -10,7 +10,6 @@ final feature dict returned to the feature pipeline.
 """
 
 from typing import List, Dict, Any
-import time
 import numpy as np
 import logging
 
