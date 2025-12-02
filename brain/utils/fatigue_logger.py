@@ -10,7 +10,7 @@ import logging
 import os
 import sqlite3
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -75,8 +75,8 @@ class FatigueLogger:
         try:
             # normalize timestamp into integer epoch seconds
             raw_ts = sample.get("timestamp", None)
-            if raw_ts is None:
-                ts_epoch = int(datetime.utcnow().timestamp())
+                if raw_ts is None:
+                ts_epoch = int(datetime.now(timezone.utc).timestamp())
             else:
                 # accept int/float epoch or ISO string
                 try:
@@ -89,10 +89,10 @@ class FatigueLogger:
                         except Exception:
                             # fallback: parse as float string
                             ts_epoch = int(float(raw_ts))
-                    else:
-                        ts_epoch = int(datetime.utcnow().timestamp())
+                        else:
+                        ts_epoch = int(datetime.now(timezone.utc).timestamp())
                 except Exception:
-                    ts_epoch = int(datetime.utcnow().timestamp())
+                    ts_epoch = int(datetime.now(timezone.utc).timestamp())
             score = float(sample.get("drowsiness_score", 0.0) or 0.0)
             state = str(sample.get("fatigue_state", "NORMAL"))
             hp = sample.get("head_pose") or {}
@@ -188,7 +188,7 @@ class FatigueLogger:
         if not self.enable or self._conn is None:
             return
         try:
-            cutoff = datetime.utcnow() - timedelta(days=int(self.retention_days))
+            cutoff = datetime.now(timezone.utc) - timedelta(days=int(self.retention_days))
             cutoff_epoch = int(cutoff.timestamp())
             with self._lock:
                 cur = self._conn.cursor()

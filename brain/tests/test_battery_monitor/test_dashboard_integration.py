@@ -1,5 +1,6 @@
 import os
-from tempfile import TemporaryDirectory
+import tempfile
+import shutil
 
 from battery_monitor.dashboard.app import create_app
 from battery_monitor.storage.event_logger import EventLogger
@@ -7,19 +8,18 @@ from data_collection.sensors.bms_handler import BMSHandler
 from battery_monitor.rules.bms_monitor import BMSMonitor
 from utils.telemetry import TelemetryCollector
 import csv
-from tempfile import TemporaryDirectory
 from collections import deque
-import os
 import time
 
 
 def test_dashboard_alerts_and_snapshot_roundtrip():
     # Full pipeline integration: CSV -> BMSHandler -> BMSMonitor -> EventLogger -> Dashboard
-    with TemporaryDirectory() as td:
-        db = os.path.join(td, 'events.db')
-        csv_path = os.path.join(td, 'sim.csv')
-        alerts_log = os.path.join(td, 'alerts.log')
-        ble_out = os.path.join(td, 'ble.json')
+    td = tempfile.mkdtemp(prefix="bms_test_")
+    try:
+        db = os.path.normpath(os.path.join(td, 'events.db'))
+        csv_path = os.path.normpath(os.path.join(td, 'sim.csv'))
+        alerts_log = os.path.normpath(os.path.join(td, 'alerts.log'))
+        ble_out = os.path.normpath(os.path.join(td, 'ble.json'))
 
         # test config (simple nested mapping for SimpleConfig-like access)
         cfg = {
@@ -127,6 +127,45 @@ def test_dashboard_alerts_and_snapshot_roundtrip():
         # computed_metrics should contain voltage_diff or be present
         assert 'computed_metrics' in latest
 
-        # cleanup
-        monitor.stop()
-        handler.stop()
+    finally:
+        # Windows-safe cleanup: stop components, close handles, wait, then remove dir
+        try:
+            monitor.stop()
+        except Exception:
+            pass
+        try:
+            handler.stop()
+        except Exception:
+            pass
+
+        # Ensure EventLogger is closed if present on monitor
+        try:
+            if hasattr(monitor, 'event_logger') and monitor.event_logger:
+                try:
+                    monitor.event_logger.close()
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # Close telemetry collector if it exposes close()
+        try:
+            if 'tel' in locals() and hasattr(tel, 'close'):
+                try:
+                    tel.close()
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # Small delay to allow Windows to release file locks
+        try:
+            time.sleep(0.1)
+        except Exception:
+            pass
+
+        # Remove temporary directory (ignore errors to avoid test failure due to OS locks)
+        try:
+            shutil.rmtree(td, ignore_errors=True)
+        except Exception:
+            pass

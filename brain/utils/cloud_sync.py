@@ -5,7 +5,7 @@ import requests
 import json
 import os
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Optional
 
 from config.config_loader import ConfigLoader
@@ -117,7 +117,7 @@ class CloudSyncManager:
             'avg_risk_score': avg_risk_score,
             'sensor_health_summary': sensor_health_summary,
             'file_count': len(files),
-            'generated_at': datetime.utcnow().isoformat(),
+            'generated_at': datetime.now(timezone.utc).isoformat(),
         }
         return summary
 
@@ -189,10 +189,10 @@ class CloudSyncManager:
                     new = f + '.synced'
                     os.rename(f, new)
                     size = os.path.getsize(new)
-                    log_entries.append({'timestamp': datetime.utcnow().isoformat(), 'file': new, 'status': 'synced', 'bytes': size})
+                    log_entries.append({'timestamp': datetime.now(timezone.utc).isoformat(), 'file': new, 'status': 'synced', 'bytes': size})
                     synced += 1
                 except Exception:
-                    log_entries.append({'timestamp': datetime.utcnow().isoformat(), 'file': f, 'status': 'rename_failed'})
+                    log_entries.append({'timestamp': datetime.now(timezone.utc).isoformat(), 'file': f, 'status': 'rename_failed'})
         else:
             # upload failed; write attempt to log
             for f in files:
@@ -200,7 +200,7 @@ class CloudSyncManager:
                     size = os.path.getsize(f)
                 except Exception:
                     size = 0
-                log_entries.append({'timestamp': datetime.utcnow().isoformat(), 'file': f, 'status': 'upload_failed', 'bytes': size})
+                    log_entries.append({'timestamp': datetime.now(timezone.utc).isoformat(), 'file': f, 'status': 'upload_failed', 'bytes': size})
 
         log_path = os.path.join(self.local_dir, 'sync_log.jsonl')
         try:

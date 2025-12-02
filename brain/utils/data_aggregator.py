@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Dict, Any
 
 import pandas as pd
@@ -269,11 +269,11 @@ class DataAggregator:
             val_path = output_path.replace('.csv', '_val.csv')
             train.to_csv(train_path, index=False)
             val.to_csv(val_path, index=False)
-            self._save_last_ts(datetime.utcnow().isoformat())
+            self._save_last_ts(datetime.now(timezone.utc).isoformat())
             return train_path
         else:
             df_bal.to_csv(output_path, index=False)
-            self._save_last_ts(datetime.utcnow().isoformat())
+            self._save_last_ts(datetime.now(timezone.utc).isoformat())
             return output_path
 
     def generate_retraining_report(self, df: pd.DataFrame, output_dir: str) -> str:
@@ -284,7 +284,7 @@ class DataAggregator:
             'features': [c for c in df.columns if c != 'label'],
             'temporal_coverage': {'start': None, 'end': None},
         }
-        report_path = os.path.join(output_dir, f"report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json")
+        report_path = os.path.join(output_dir, f"report_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json")
         try:
             with open(report_path, 'w', encoding='utf-8') as fh:
                 json.dump(stats, fh, default=str)

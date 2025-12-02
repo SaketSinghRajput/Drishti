@@ -2,17 +2,26 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from utils.time_utils import parse_timestamp
 
 
+def _get_project_root() -> Path:
+    """Return the project `brain/` directory as a Path object.
 
-def load_schema(path: str = "config/schema/sensor_window_schema.json") -> Dict[str, Any]:
+    This helper navigates up from `brain/utils/` to the repository package root
+    so schema files can be resolved regardless of the current working directory.
+    """
+    return Path(__file__).resolve().parent.parent
+
+
+def load_schema(path: str = str(_get_project_root() / "config" / "schema" / "sensor_window_schema.json")) -> Dict[str, Any]:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
-def validate_window(window: Dict[str, Any], schema_path: str = "config/schema/sensor_window_schema.json") -> Tuple[bool, List[str]]:
+def validate_window(window: Dict[str, Any], schema_path: str = str(_get_project_root() / "config" / "schema" / "sensor_window_schema.json")) -> Tuple[bool, List[str]]:
     schema = load_schema(schema_path)
     errors = []
     try:
@@ -48,7 +57,7 @@ def validate_sensor_reading(sensor_name: str, data: Dict[str, Any]) -> Tuple[boo
     return (len(errors) == 0, errors)
 
 
-def load_bms_schema(path: str = "config/bms_schema.json") -> Dict[str, Any]:
+def load_bms_schema(path: str = str(_get_project_root() / "config" / "bms_schema.json")) -> Dict[str, Any]:
     try:
         with open(path, 'r', encoding='utf-8') as f:
             import json
@@ -90,7 +99,7 @@ def compute_data_quality_score(window: Dict[str, Any], expected_sensors: List[st
     return present / len(expected_sensors)
 
 
-def validate_label(label: Dict[str, Any], schema_path: str = "config/schema/label_schema.json") -> Tuple[bool, List[str]]:
+def validate_label(label: Dict[str, Any], schema_path: str = str(_get_project_root() / "config" / "schema" / "label_schema.json")) -> Tuple[bool, List[str]]:
     """Validate a single label dict against the label schema.
 
     Returns (is_valid, errors).
@@ -110,7 +119,7 @@ def validate_label(label: Dict[str, Any], schema_path: str = "config/schema/labe
         return (True, [])
 
 
-def validate_labeled_dataset(labels: List[Dict[str, Any]], schema_path: str = "config/schema/label_schema.json") -> Dict[str, Any]:
+def validate_labeled_dataset(labels: List[Dict[str, Any]], schema_path: str = str(_get_project_root() / "config" / "schema" / "label_schema.json")) -> Dict[str, Any]:
     """Batch-validate labels and return a summary dict.
 
     Summary contains counts of valid/invalid/duplicates and a sample of error messages.

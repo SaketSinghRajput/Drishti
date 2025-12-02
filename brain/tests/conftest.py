@@ -1,11 +1,25 @@
 import os
 import json
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
 from config.config_loader import ConfigLoader
+import threading
+
+
+# Ensure ConfigLoader singleton is reset between tests to avoid state leakage
+@pytest.fixture(autouse=True)
+def reset_config_loader_singleton():
+    """Reset ConfigLoader singleton before each test to ensure test isolation."""
+    from config.config_loader import ConfigLoader as _CL
+
+    _CL._instance = None
+    _CL._instance_lock = threading.Lock()
+    yield
+    # reset again after test for extra safety
+    _CL._instance = None
 
 
 @pytest.fixture(scope="session")
@@ -160,7 +174,7 @@ def mock_camera_cap(monkeypatch, mock_frame):
 def sample_sensor_window():
     # minimal valid sample matching schema
     return {
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         "vehicle_hash": "vh_abc123",
         "gps": {"lat": 37.0, "lon": -122.0, "speed_kph": 50.0, "heading": 180},
         "imu": {"yaw_rate": 0.1, "pitch": 0.0, "roll": 0.0, "ax": 0.0, "ay": 0.0, "az": 9.8},

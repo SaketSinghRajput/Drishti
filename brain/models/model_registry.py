@@ -4,7 +4,7 @@ import threading
 import time
 from typing import Optional, Dict, Any, List
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class ModelRegistry:
@@ -118,14 +118,14 @@ class ModelRegistry:
 
     def record_deployment(self, model_id: int, edge_device_id: str, status: str = 'ok'):
         with self._conn() as c:
-            c.execute('INSERT INTO deployments(model_id,edge_device_id,deployed_at,status) VALUES(?,?,?,?)', (model_id, edge_device_id, datetime.utcnow().isoformat(), status))
+            c.execute('INSERT INTO deployments(model_id,edge_device_id,deployed_at,status) VALUES(?,?,?,?)', (model_id, edge_device_id, datetime.now(timezone.utc).isoformat(), status))
 
     def register_model(self, horizon: int, model_path: str, onnx_path: Optional[str], config_snapshot: Dict[str, Any], dataset_hash: str, metrics: Dict[str, float], trained_by: str = '') -> int:
         version = self._next_version()
         with self._lock:
             with self._conn() as c:
                 c.execute('''INSERT INTO models(version,horizon,created_at,trained_by,dataset_hash,config_snapshot,model_path,onnx_path,status) VALUES(?,?,?,?,?,?,?,?,?)''',
-                          (version, horizon, datetime.utcnow().isoformat(), trained_by, dataset_hash, json.dumps(config_snapshot), model_path, onnx_path or '', 'validated'))
+                          (version, horizon, datetime.now(timezone.utc).isoformat(), trained_by, dataset_hash, json.dumps(config_snapshot), model_path, onnx_path or '', 'validated'))
                 model_id = c.lastrowid
                 for k, v in (metrics or {}).items():
                     c.execute('INSERT INTO metrics(model_id,metric_name,metric_value,split) VALUES(?,?,?,?)', (model_id, k, float(v), 'val'))

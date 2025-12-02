@@ -5,7 +5,7 @@ import os
 import re
 import subprocess
 import threading
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from config.config_loader import ConfigLoader
@@ -303,7 +303,7 @@ class HardwareChecker:
 
     def detect_hardware(self) -> Dict[str, Any]:
         with self._lock:
-            ts = datetime.utcnow().isoformat()
+            ts = datetime.now(timezone.utc).isoformat()
             summary: Dict[str, Any] = {
                 'timestamp': ts,
                 'expected_sensors': list(self.expected_sensors),
@@ -488,7 +488,7 @@ class HardwareChecker:
         # or self_test() because those methods acquire the same lock internally and
         # doing so would cause a deadlock. Build the summary locally without
         # long-lived shared state and rely on per-method locking.
-        ts = datetime.utcnow().isoformat()
+        ts = datetime.now(timezone.utc).isoformat()
         summary: Dict[str, Any] = {
             'timestamp': ts,
             'expected_sensors': list(self.expected_sensors),

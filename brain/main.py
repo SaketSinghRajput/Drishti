@@ -159,9 +159,11 @@ def _signal_handler(sig, frame):
     print(f"Received signal {sig}; shutting down orchestrator...")
     _running = False
 
-
-signal.signal(signal.SIGINT, _signal_handler)
-signal.signal(signal.SIGTERM, _signal_handler)
+# NOTE: signal handlers are intentionally NOT registered at import time to avoid
+# installing process-global handlers during test collection or when this module
+# is imported by other code (such as pytest). Handlers are registered inside
+# `main()` so they only apply when the orchestrator is run as a standalone
+# process. This prevents spurious "Received signal 2" prints during tests.
 
 
 def build_safety_packet(vehicle_hash: str, fatigue_pct: int, risk_pct: int, battery_severity: str, max_cell_temp: float, ble_neighbors: int, lat: float, lon: float, speed: float) -> Dict[str, Any]:
@@ -187,6 +189,19 @@ def main():
     parser.add_argument("--trip-id", default="")
     parser.add_argument("--log-level", default="INFO")
     args = parser.parse_args()
+
+    # Register signal handlers only when running as a top-level orchestrator process.
+    # Avoid registering during pytest or when this module is imported by tests.
+    try:
+        import os as _os
+        # Pytest sets PYTEST_CURRENT_TEST during individual test runs; skip handler
+        # registration when running under pytest to avoid intercepting test signals.
+        if not (_os.environ.get("PYTEST_CURRENT_TEST") or _os.environ.get("PYTEST_RUNNING")):
+            signal.signal(signal.SIGINT, _signal_handler)
+            signal.signal(signal.SIGTERM, _signal_handler)
+    except Exception:
+        # If signal registration fails for any reason, proceed without handlers.
+        pass
 
     cfg = ConfigLoader(args.config) if 'ConfigLoader' in globals() else ConfigLoader()
     telemetry = TelemetryCollector(cfg)

@@ -6,7 +6,7 @@ import json
 import os
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 import base64
 
@@ -43,7 +43,7 @@ class TelemetryCollector:
             self._open_file()
 
     def _open_file(self) -> None:
-        ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         base = os.path.join(self.output_dir, f"telemetry_{ts}")
         if self.encrypt:
             # write to a temporary plaintext file, will be encrypted on flush
@@ -144,7 +144,7 @@ class TelemetryCollector:
 
     def _rotate(self) -> None:
         try:
-            cutoff = datetime.utcnow() - timedelta(days=self.retention_days)
+            cutoff = datetime.now(timezone.utc) - timedelta(days=self.retention_days)
             for fn in os.listdir(self.output_dir):
                 if not fn.startswith("telemetry_"):
                     continue
@@ -197,7 +197,7 @@ class TelemetryCollector:
         if not self.enabled:
             return
         entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "type": "prediction",
             "risk_score": float(risk_score),
             "alert_level": alert_level,
@@ -214,7 +214,7 @@ class TelemetryCollector:
         if not self.enabled:
             return
         entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "type": "outcome",
             "prediction_id": prediction_id,
             "actual_outcome": actual_outcome,
@@ -230,7 +230,7 @@ class TelemetryCollector:
         if not self.enabled:
             return
         entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "type": "false_alarm",
             "prediction_id": prediction_id,
             "reason": reason,
@@ -274,7 +274,7 @@ class TelemetryCollector:
                 pass
 
         entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "type": "battery_alert",
             "source": alert.get("source", "rule"),
             "severity": alert.get("severity", "LOW"),
@@ -300,7 +300,7 @@ class TelemetryCollector:
             return
 
         entry = {
-            "timestamp": results.get("timestamp") or datetime.utcnow().isoformat(),
+            "timestamp": results.get("timestamp") or datetime.now(timezone.utc).isoformat(),
             "type": "hardware_check",
             "expected_sensors": results.get("expected_sensors", []),
             "passed_tests": results.get("passed_tests", []),

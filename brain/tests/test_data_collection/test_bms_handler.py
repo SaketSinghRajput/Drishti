@@ -3,7 +3,7 @@ import time
 from unittest import mock
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from config.config_loader import ConfigLoader
 from data_collection.sensors.bms_handler import BMSHandler
@@ -166,9 +166,9 @@ def test_bms_handler_can_malformed_frame_increments_parse_error(tmp_path):
 
 def test_bms_handler_can_window_integration(tmp_path):
     cfg = make_can_config(tmp_path)
-    now = datetime.utcnow().replace(microsecond=0)
-    t1 = now.isoformat() + 'Z'
-    t2 = (now + timedelta(seconds=1)).isoformat() + 'Z'
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    t1 = now.isoformat().replace('+00:00', 'Z')
+    t2 = (now + timedelta(seconds=1)).isoformat().replace('+00:00', 'Z')
     normalized1 = {'pack_voltage': 48.0, 'cell_voltages': [3.7] * 12, 'timestamp': t1}
     normalized2 = {'pack_voltage': 48.1, 'cell_voltages': [3.71] * 12, 'timestamp': t2}
 

@@ -63,12 +63,29 @@ class ConfigLoader:
         # If already initialized, but a different path is requested, update
         # the path and reload so the caller gets the requested configuration.
         if path and path != getattr(self, "_config_path", None):
+            # Defensive check: ensure the requested path exists before switching.
+            if not os.path.exists(path):
+                raise ConfigError(f"Cannot switch to non-existent config: {path}")
             self.set_path(path)
 
     def _load(self) -> None:
-        if not os.path.exists(self._config_path):
-            raise ConfigError(f"Configuration file not found: {self._config_path}")
-        with open(self._config_path, "r", encoding="utf-8") as f:
+        # Load using the current `_config_path` value. This delegates to the
+        # helper `_load_from_path` which implements the actual parsing logic.
+        data = self._load_from_path(self._config_path)
+        self._data = data
+        # validate presence of required top-level sections and keys
+        self._validate_schema()
+
+    def _load_from_path(self, path: str) -> Dict[str, Any]:
+        """Load configuration data from an explicit path and return the parsed mapping.
+
+        This helper allows callers to attempt loading a new config file without
+        mutating `self._config_path` or `self._data` until the load is known to
+        succeed. It raises `ConfigError` on missing files or parse errors.
+        """
+        if not os.path.exists(path):
+            raise ConfigError(f"Configuration file not found: {path}")
+        with open(path, "r", encoding="utf-8") as f:
             # Try to use PyYAML if available; otherwise fall back to a tiny
             # YAML-like parser sufficient for our default_config.yaml structure.
             try:
@@ -87,9 +104,7 @@ class ConfigLoader:
                     raise ConfigError(f"Failed to parse YAML (no PyYAML): {e}")
         if not isinstance(data, dict):
             raise ConfigError("Top-level configuration must be a mapping/dictionary")
-        self._data = data
-        # validate presence of required top-level sections and keys
-        self._validate_schema()
+        return data
 
     def _simple_yaml_parse(self, content: str) -> Dict[str, Any]:
         """A very small YAML-like parser to handle simple mappings and nested mappings.
@@ -157,7 +172,11 @@ class ConfigLoader:
         return result
 
     def reload(self) -> None:
-        """Force reload configuration from disk and clear cache."""
+        """Force reload configuration from disk and clear cache.
+
+        Note: Cache is cleared after loading to ensure the new config is
+        fully loaded before any `get()` calls can populate the cache.
+        """
         self._load()
         self._cache.clear()
 
@@ -196,9 +215,24 @@ class ConfigLoader:
             return {}
 
     def set_path(self, path: str) -> None:
-        """Set a new configuration path and reload immediately."""
-        self._config_path = path
-        self.reload()
+        """Set a new configuration path and reload immediately.
+
+        Clears cache before updating path to prevent race conditions where
+        `get()` might return stale cached values during a reload.
+        """
+        # Attempt to load the new configuration first, and only swap it into
+        # the live state if the load succeeds. This preserves the previous
+        # in-memory config and cache when the new path is invalid or fails
+        # to parse.
+        with self._instance_lock:
+            # Load new data from the path without mutating current state
+            new_data = self._load_from_path(path)
+            # Swap in new configuration and update path atomically
+            self._data = new_data
+            self._config_path = path
+            # Clear cache after successfully loading the new config to avoid
+            # stale cached values referencing the old configuration.
+            self._cache.clear()
 
     def _validate_schema(self) -> None:
         """Validate presence of required top-level sections and a few keys.

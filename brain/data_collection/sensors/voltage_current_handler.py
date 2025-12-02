@@ -163,7 +163,7 @@ class VoltageCurrentHandler(SensorHandler):
                         'pack_current_a': float(current),
                         'max_temp_c': float(temp),
                         'power_w': float(power),
-                        'timestamp': row.get('timestamp') or datetime.utcnow().isoformat(),
+                        'timestamp': row.get('timestamp') or datetime.now(timezone.utc).isoformat(),
                     }
 
                     if out_of_range_fields:
@@ -243,7 +243,7 @@ class VoltageCurrentHandler(SensorHandler):
                     'pack_current_a': float(current) if current is not None else None,
                     'max_temp_c': float(temp) if temp is not None else None,
                     'power_w': float(power) if power is not None else None,
-                    'timestamp': datetime.utcnow().isoformat(),
+                    'timestamp': datetime.now(timezone.utc).isoformat(),
                 }
 
                 if out_of_range_fields:

@@ -6,7 +6,7 @@ import logging
 import os
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, List, Optional
 
 from config.config_loader import ConfigLoader
@@ -32,7 +32,7 @@ class ExplanationLogger:
             self._open_new_file()
 
     def _open_new_file(self) -> None:
-        ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         self._current_path = os.path.join(self.output_dir, f"explanations_{ts}.jsonl")
         self._current_file = open(self._current_path, "a", encoding="utf-8")
 
@@ -88,7 +88,7 @@ class ExplanationLogger:
 
     def _rotate(self) -> None:
         try:
-            cutoff = datetime.utcnow() - timedelta(hours=self.retention_h)
+            cutoff = datetime.now(timezone.utc) - timedelta(hours=self.retention_h)
             for fn in os.listdir(self.output_dir):
                 if not fn.startswith("explanations_"):
                     continue
@@ -96,7 +96,7 @@ class ExplanationLogger:
                 # parse timestamp from filename
                 try:
                     ts = fn.split("_")[1].split(".")[0]
-                    file_dt = datetime.strptime(ts, "%Y%m%d_%H%M%S")
+                    file_dt = datetime.strptime(ts, "%Y%m%d_%H%M%S").replace(tzinfo=timezone.utc)
                     if file_dt < cutoff:
                         os.remove(path)
                 except Exception:

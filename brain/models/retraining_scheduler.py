@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 import requests
 import threading
@@ -37,7 +37,7 @@ class RetrainingScheduler:
     def should_trigger_retraining(self) -> bool:
         if not self.enabled:
             return False
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         lr = self._read_last_run()
         if self.schedule == 'monthly':
             if now.day == 1:
@@ -72,7 +72,7 @@ class RetrainingScheduler:
         # webhook approval: try to POST a request and then poll for approval
         if self.approval_method == 'webhook' and self.approval_webhook_url:
             try:
-                return self.request_approval({'action': 'retraining_request', 'timestamp': datetime.utcnow().isoformat()})
+                return self.request_approval({'action': 'retraining_request', 'timestamp': datetime.now(timezone.utc).isoformat()})
             except Exception:
                 return False
         return False
@@ -117,4 +117,4 @@ class RetrainingScheduler:
         return False
 
     def update_last_run(self):
-        self._write_last_run({'last_run': datetime.utcnow().isoformat()})
+        self._write_last_run({'last_run': datetime.now(timezone.utc).isoformat()})

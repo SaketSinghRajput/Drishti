@@ -6,7 +6,7 @@ import argparse
 import json
 import os
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 def random_window(base_time: datetime, vehicle_hash: str = "vh_demo", scenario: str = "normal"):
@@ -58,7 +58,7 @@ def main(argv=None):
         random.seed(args.seed)
 
     os.makedirs(args.output_dir, exist_ok=True)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     count = 0
     for s in range(args.num_samples):
         base = now + timedelta(seconds=s * args.trip_length)

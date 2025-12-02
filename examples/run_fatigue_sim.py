@@ -10,7 +10,7 @@ import argparse
 import math
 import random
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 try:
     import cv2
@@ -54,7 +54,7 @@ class SimulatedFatigue:
             self.blink_count += 1
             blinked = True
         sample = {
-            'timestamp': datetime.utcnow().isoformat() + 'Z',
+            'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
             'ear': round(self.ear, 3),
             'blink_count': self.blink_count,
             'fatigue_pct': round(fatigue_pct, 1),

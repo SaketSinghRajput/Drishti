@@ -39,11 +39,18 @@ def test_require_and_defaults(tmp_path):
 
 
 def test_reload_and_set_path(tmp_path):
+    # Defensive reset to ensure clean singleton state for this test
+    ConfigLoader._instance = None
+
     p1 = tmp_path / "a.yaml"
     p1.write_text("model:\n  prediction_horizon_s: 3\n  risk_thresholds: {low: 0.1}\n")
     p2 = tmp_path / "b.yaml"
-    p2.write_text("sensors:\n  gps:\n    sample_rate: 1\nmodel:\n  prediction_horizon_s: 5\n  risk_thresholds: {low: 0.2}\ntelemetry:\n  log_level: INFO\nprivacy:\n  encrypt_storage: true\n data_collection:\n  window_size_s: 5\n inference:\n  latency_budget_ms: 200\n")
+    p2.write_text(
+        "sensors:\n  gps:\n    sample_rate: 1\nmodel:\n  prediction_horizon_s: 5\n  risk_thresholds: {low: 0.2}\ntelemetry:\n  log_level: INFO\nprivacy:\n  encrypt_storage: true\ndata_collection:\n  window_size_s: 5\ninference:\n  latency_budget_ms: 200\n"
+    )
     loader = ConfigLoader(str(p1))
+    # verify p1 loaded correctly
+    assert loader.get("model.prediction_horizon_s") == 3
     # switch to p2 using set_path and reload
     loader.set_path(str(p2))
     assert loader.get("model.prediction_horizon_s") == 5

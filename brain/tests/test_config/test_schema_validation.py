@@ -1,5 +1,6 @@
 import json
 import pytest
+from pathlib import Path
 try:
     from jsonschema import validate, ValidationError
 except Exception:
@@ -7,7 +8,11 @@ except Exception:
 
 
 def load_schema(path):
-    with open(path, "r", encoding="utf-8") as f:
+    # Resolve relative schema paths from the project root so tests pass
+    # regardless of the current working directory during pytest runs.
+    project_root = Path(__file__).resolve().parent.parent.parent
+    schema_path = project_root / path
+    with open(schema_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
