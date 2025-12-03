@@ -1,7 +1,9 @@
 version: '3.8'
 services:
   inference:
-    build: .
+    build: 
+    context: ../../             # <--- Changed: Go up to project root
+    dockerfile: Dockerfile
     platform: linux/arm64
     privileged: true
     devices:
@@ -10,14 +12,14 @@ services:
       - /dev/gpiomem:/dev/gpiomem:ro
       - /dev/apex_0:/dev/apex_0:rwm
     volumes:
-      - ./models:/models:ro
-      - ./config:/config:ro
+      - ../../models:/models:ro   # <--- Changed: Go up to find models
+      - ../../config:/config:ro   # <--- Changed: Go up to find config
     ports:
       - "5000-5003:5000-5003"
     restart: unless-stopped
 
   monitoring:
-    build: ./deployment/monitoring_dashboard
+    build: ../../deployment/monitoring_dashboard  # <--- Changed: Full path from root
     ports:
       - "5003:5003"
     depends_on:
