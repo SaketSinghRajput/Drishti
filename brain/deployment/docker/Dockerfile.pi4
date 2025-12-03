@@ -40,6 +40,10 @@ RUN apt-get update \
 FROM base AS runtime
 COPY . /app
 WORKDIR /app
+# Install the repository in editable mode so package-style imports like
+# `data_collection` work when running scripts inside the container.
+# `--no-deps` avoids re-installing dependencies already installed in the base stage.
+RUN pip install --no-deps -e /app || true
 RUN useradd -m evuser \
     && mkdir -p /home/pi \
     && chown -R evuser:evuser /app /home/pi /models /config || true
