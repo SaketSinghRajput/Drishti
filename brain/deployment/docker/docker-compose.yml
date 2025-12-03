@@ -1,7 +1,9 @@
 version: '3.8'
 services:
   inference:
-    build: ../../
+    build: 
+      context: ../../
+      dockerfile: deployment/docker/Dockerfile.pi4
     platform: linux/arm64
     privileged: true
     devices:
