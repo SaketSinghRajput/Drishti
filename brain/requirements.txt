@@ -79,8 +79,8 @@ requests>=2.31.0,<3.0.0
 # - Pin versions for reproducibility; update as needed.
 
 # BLE Mesh (for production deployment, currently simulated)
-# pybluez: Linux BlueZ bindings for BLE scanning
-pybluez>=0.23
+# # pybluez: Linux BlueZ bindings for BLE scanning
+# pybluez>=0.23
 # bleak with BlueZ extras (Linux peripheral support where provided)
 bleak[bluez]>=0.20.0
 # Note: Current implementation uses simulated BLE mesh. Uncomment above for real hardware integration.
@@ -110,5 +110,5 @@ pyserial>=3.5  # UART/serial port access
 
 # Optional power-bus monitoring libs (CircuitPython drivers) - install on Pi/ARM platforms
 adafruit-circuitpython-ina219>=3.4.0; platform_machine=='armv7l' or platform_machine=='aarch64'
-adafruit-ads1x15>=2.2.0; platform_machine=='armv7l' or platform_machine=='aarch64'
+adafruit-circuitpython-ads1x15>=2.2.0; platform_machine=='armv7l' or platform_machine=='aarch64'
 adafruit-blinka>=8.0.0; platform_machine=='armv7l' or platform_machine=='aarch64'

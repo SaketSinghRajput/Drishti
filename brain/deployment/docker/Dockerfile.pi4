@@ -2,7 +2,7 @@ FROM python:3.9-slim-bookworm AS base
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libedgetpu1-std \
+        #libedgetpu1-std \
         libatlas-base-dev \
         libopenblas0 \
         v4l-utils \
@@ -10,6 +10,7 @@ RUN apt-get update \
         libgomp1 \
         libi2c-dev \
     && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt /requirements.txt
 
 RUN pip install --no-cache-dir -r /requirements.txt
 
