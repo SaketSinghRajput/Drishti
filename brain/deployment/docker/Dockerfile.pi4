@@ -40,7 +40,11 @@ RUN apt-get update \
 FROM base AS runtime
 COPY . /app
 WORKDIR /app
-RUN useradd -m evuser && chown -R evuser:evuser /app && chown -R evuser:evuser /models /config || true
+RUN useradd -m evuser \
+    && mkdir -p /home/pi \
+    && chown -R evuser:evuser /app /home/pi /models /config || true
+
+# Switch to unprivileged user for runtime
 USER evuser
 EXPOSE 5000-5003/tcp
 # Lightweight python-based healthcheck to avoid requiring curl in runtime image
