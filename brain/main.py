@@ -131,7 +131,9 @@ try:
     from inference.alert_manager import AlertManager
 except Exception:
     class AlertManager:
-        def __init__(self, cfg=None):
+        def __init__(self, cfg=None, gsm_handler=None):
+            # Fallback stub used when real AlertManager import fails
+            print('Using AlertManager STUB (real import failed)')
             pass
 
         def process_decision(self, decision: Dict[str, Any]):
