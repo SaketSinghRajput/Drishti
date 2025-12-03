@@ -108,7 +108,9 @@ try:
     from dashboard.app import create_app
     from dashboard.state import DashboardState
 except Exception:
-    def create_app(checker=None):
+    def create_app(config: dict = None, telemetry_collector=None, explanation_logger=None, video_retention_manager=None):
+        # Fallback stub used when real dashboard import fails
+        # Signature matches real `create_app` to avoid TypeError in degraded mode
         return None
 
     class DashboardState:
