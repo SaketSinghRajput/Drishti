@@ -1,0 +1,88 @@
+# Pi4 ARM64 Runtime Requirements (Optimized for slow internet + edge inference)
+# Removed: tensorflow (259MB), torch (102MB), lightgbm, ultralytics, scikit-learn, pytest, dev tools
+# Total size: ~150MB (vs 500MB+ full requirements.txt)
+
+psutil>=5.9.0,<6.0.0
+flask-cors>=4.0.0,<5.0.0
+
+# Data processing (inference-time feature engineering)
+pandas>=2.0.0,<3.0.0
+numpy>=1.24.0,<2.0.0
+scipy>=1.10.0,<2.0.0
+
+# Machine learning (inference only)
+xgboost>=2.0.0,<3.0.0
+joblib>=1.3.0,<2.0.0
+# Removed: scikit-learn, lightgbm, imbalanced-learn (training only)
+
+# Deep learning (REMOVED - training only)
+# tensorflow>=2.13.0,<3.0.0  # 259MB - not needed for edge
+# torch>=2.0.0,<3.0.0  # 102MB - not needed for edge
+# tensorflow-model-optimization>=0.7.0,<1.0.0
+
+# Computer vision
+opencv-python>=4.8.0,<5.0.0
+Pillow>=10.0.0,<11.0.0
+mediapipe>=0.10.0,<1.0.0
+imutils>=0.5.4,<1.0.0
+# Removed: ultralytics>=8.0.0 (YOLO not used)
+
+# Model inference
+onnx>=1.14.0,<2.0.0
+onnxruntime>=1.15.0,<2.0.0
+tf2onnx>=1.15.0,<2.0.0
+
+# Explainability
+shap>=0.42.0,<1.0.0
+
+# Training tools (REMOVED)
+# onnxmltools>=1.11.0,<2.0.0
+# skl2onnx>=1.14.0,<2.0.0
+# matplotlib>=3.7.0,<4.0.0
+# seaborn>=0.12.0,<1.0.0
+
+# Configuration
+pyyaml>=6.0,<7.0
+jsonschema>=4.17.0,<5.0.0
+pydantic>=2.0.0,<3.0.0
+
+# Utilities
+python-dateutil>=2.8.0,<3.0.0
+tqdm>=4.65.0,<5.0.0
+loguru>=0.7.0,<1.0.0
+
+# Dev/test tools (REMOVED)
+# pytest>=7.3.0,<8.0.0
+# pytest-cov>=4.1.0,<5.0.0
+# black>=23.3.0,<24.0.0
+# flake8>=6.0.0,<7.0.0
+# mypy>=1.3.0,<2.0.0
+
+# Edge/optional
+google-generativeai>=0.3.0,<1.0.0
+cryptography>=41.0.0,<42.0.0
+requests>=2.31.0,<3.0.0
+
+# BLE Mesh
+bleak[bluez]>=0.20.0
+
+# Battery Monitoring System
+python-can>=4.2.0,<5.0.0
+flask>=2.3.0,<3.0.0
+sqlalchemy>=2.0.0,<3.0.0
+# RPi.GPIO>=0.7.1  # GPIO optional
+gpiozero>=2.0.0,<3.0.0
+pyttsx3>=2.90,<3.0.0
+flask-caching>=2.0.0
+
+# Hardware diagnostics
+smbus2>=0.4.1
+# spidev>=3.0; platform_machine=="armv7l" or platform_machine=="aarch64"  # SPI optional
+spidev>=3.0; platform_machine=="armv7l" or platform_machine=="aarch64"  # Fixed: 3.5→3.0 (avoid source compile)
+pyserial>=3.5
+
+# Power-bus monitoring (ARM only)
+adafruit-circuitpython-ina219>=3.4.0; platform_machine=='armv7l' or platform_machine=='aarch64'
+# adafruit-circuitpython-ads1x15>=1.0.0; platform_machine=='armv7l' or platform_machine=='aarch64'  # ADS1115 optional
+adafruit-circuitpython-ads1x15>=1.0.0; platform_machine=='armv7l' or platform_machine=='aarch64'  # Fixed: 2.2.0→1.0.0 (Py3.9 compat)
+adafruit-blinka>=8.0.0; platform_machine=='armv7l' or platform_machine=='aarch64'

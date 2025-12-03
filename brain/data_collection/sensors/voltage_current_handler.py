@@ -22,15 +22,23 @@ from utils.time_utils import get_utc_timestamp
 logger = logging.getLogger(__name__)
 
 try:
-    # CircuitPython drivers (optional)
-    import board
-    import busio
-    from adafruit_ina219 import ADCResolution, INA219
-    from adafruit_ads1x15.ads1115 import ADS1115
-    from adafruit_ads1x15.analog_in import AnalogIn
-    _has_circuit = True
+    # Prefer the lightweight utils wrapper which centralizes the optional
+    # CircuitPython imports. This keeps the handler code simpler and allows
+    # other modules to reuse the same availability flag.
+    from utils.voltage_current_handler import (
+        _HAS_CIRCUIT as _has_circuit,
+        ADCResolution,
+        INA219,
+        ADS1115,
+        AnalogIn,
+    )
 except Exception:
+    # Fallback: mark circuit libraries as unavailable
     _has_circuit = False
+    ADCResolution = None
+    INA219 = None
+    ADS1115 = None
+    AnalogIn = None
 
 
 class VoltageCurrentHandler(SensorHandler):
