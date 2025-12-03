@@ -5,13 +5,15 @@ ARG WITH_EDGETPU=false
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ${WITH_EDGETPU:+libedgetpu1-std} \
         libatlas-base-dev \
         libopenblas0 \
         v4l-utils \
         can-utils \
         libgomp1 \
         libi2c-dev \
+    && if [ "${WITH_EDGETPU}" = "true" ]; then \
+         apt-get install -y --no-install-recommends libedgetpu1-std; \
+       fi \
     && rm -rf /var/lib/apt/lists/*
 
 # Use the Pi-optimized runtime requirements file if present
