@@ -31,7 +31,7 @@ import numpy as np
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--video", help="Path to video file to process", default=None)
-    p.add_argument("--camera", type=int, help="Camera device id (overrides video)", default=None)
+    p.add_argument("--camera", type=str, help="Camera device id or device path (e.g. 0 or /dev/video0) (overrides video)", default=None)
     p.add_argument("--visualize", action="store_true")
     p.add_argument("--output", help="Path to save annotated video (mp4)", default=None)
     p.add_argument("--config", help="Path to config yaml", default=None)
@@ -49,7 +49,22 @@ def main():
         cfg._data["sensors"]["driver_fatigue"]["video_file_path"] = args.video
     if args.camera is not None:
         cfg._data.setdefault("sensors", {}).setdefault("driver_fatigue", {})
-        cfg._data["sensors"]["driver_fatigue"]["camera_device_id"] = int(args.camera)
+        cam_val = args.camera
+        # Accept either integer index or device path like /dev/video0
+        if isinstance(cam_val, str):
+            if cam_val.isdigit():
+                cam_val = int(cam_val)
+            elif cam_val.startswith("/dev/"):
+                # pass through device path string — CameraInterface should handle it
+                cam_val = cam_val
+            else:
+                # try int conversion as a fallback
+                try:
+                    cam_val = int(cam_val)
+                except Exception:
+                    # leave as string; CameraInterface may still accept it
+                    pass
+        cfg._data["sensors"]["driver_fatigue"]["camera_device_id"] = cam_val
 
     # Handler accepts either a dict or a ConfigLoader; pass underlying dict for clarity
     handler = DriverFatigueHandler(cfg._data if hasattr(cfg, "_data") else cfg)
