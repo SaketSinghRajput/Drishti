@@ -17,8 +17,12 @@ services:
       - "5000-5003:5000-5003"
     restart: unless-stopped
 
+  # Monitoring/dashboard service: original project path `../../deployment/monitoring_dashboard`
+  # was not present in this workspace which caused `failed to read dockerfile` errors.
+  # Provide a lightweight placeholder image so compose succeeds; replace with
+  # your dashboard build context when available.
   monitoring:
-    build: ../../deployment/monitoring_dashboard  # <--- Changed: Full path from root
+    image: nginx:alpine
     ports:
       - "5003:5003"
     depends_on:
