@@ -34,8 +34,32 @@ def main():
     p.add_argument("--camera", type=str, help="Camera device id or device path (e.g. 0 or /dev/video0) (overrides video)", default=None)
     p.add_argument("--visualize", action="store_true")
     p.add_argument("--output", help="Path to save annotated video (mp4)", default=None)
+    p.add_argument("--duration", type=int, help="Run duration in seconds (0=infinite)", default=0)
     p.add_argument("--config", help="Path to config yaml", default=None)
     args = p.parse_args()
+
+    # Optional backend warnings (help users install missing heavy deps)
+    try:
+        import mediapipe  # type: ignore
+        _mp_ok = True
+    except Exception:
+        _mp_ok = False
+    try:
+        import tflite_runtime  # type: ignore
+        _tflite_ok = True
+    except Exception:
+        _tflite_ok = False
+    try:
+        import tensorflow  # type: ignore
+        _tf_ok = True
+    except Exception:
+        _tf_ok = False
+
+    if not (_mp_ok or _tflite_ok or _tf_ok):
+        print("Warning: None of MediaPipe/TFLite/TensorFlow backends are available.")
+        print("The detector will attempt fallbacks; for best results install one of:")
+        print("  - mediapipe (pip install mediapipe)")
+        print("  - tflite_runtime (platform-specific wheel) or tensorflow (pip install tensorflow)")
 
     # load config (allow override)
     if args.config:
@@ -85,6 +109,7 @@ def main():
             h = int(cfg._data.get("sensors", {}).get("driver_fatigue", {}).get("camera_resolution", {}).get("height", 480))
             writer = cv2.VideoWriter(args.output, fourcc, 20.0, (w, h))
 
+        start_ts = time.time()
         while True:
             sample = handler.read()
             if sample:
@@ -119,6 +144,9 @@ def main():
                 except Exception:
                     print(sample)
 
+            # duration handling
+            if args.duration and (time.time() - start_ts) >= args.duration:
+                break
             time.sleep(1.0 / max(1, getattr(handler, "sample_rate", 1)))
     except KeyboardInterrupt:
         print("Shutting down")
