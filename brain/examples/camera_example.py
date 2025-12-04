@@ -15,22 +15,31 @@ def main():
     args = p.parse_args()
 
     cfg = ConfigLoader("config/default_config.yaml")
+
+    # Helper to apply nested dict overrides using ConfigLoader.set()
+    def apply_overrides(cfg, mapping, prefix=""):
+        for k, v in mapping.items():
+            key = f"{prefix}.{k}" if prefix else k
+            if isinstance(v, dict):
+                apply_overrides(cfg, v, key)
+            else:
+                cfg.set(key, v)
+
     # model override mapping
     if args.model == "mediapipe":
-        cfg.override({
+        overrides = {
             "sensors": {"camera": {"model_type": "mediapipe_tflite", "enable_simulation": False, "enable_pose_detection": True}},
             "mediapipe": {"enabled": True},
-        })
+        }
+        apply_overrides(cfg, overrides)
     elif args.model == "legacy":
         # explicit legacy/opencv backend
-        cfg.override({
-            "sensors": {"camera": {"model_type": "opencv", "enable_simulation": False, "enable_pose_detection": False}},
-        })
+        overrides = {"sensors": {"camera": {"model_type": "opencv", "enable_simulation": False, "enable_pose_detection": False}}}
+        apply_overrides(cfg, overrides)
     else:
         # simulation: use generator and disable webcam
-        cfg.override({
-            "sensors": {"camera": {"enable_webcam": False, "model_type": "simulation", "enable_simulation": True}},
-        })
+        overrides = {"sensors": {"camera": {"enable_webcam": False, "model_type": "simulation", "enable_simulation": True}}}
+        apply_overrides(cfg, overrides)
     logger = DataLogger(cfg)
     logger.start()
     print("Logging for 10 seconds (camera simulation)...")
