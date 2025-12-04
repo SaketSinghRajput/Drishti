@@ -1,0 +1,17 @@
+{
+  "arch": "aarch64",
+  "build": "py312hcd1a082_3",
+  "build_number": 3,
+  "depends": [
+    "libgcc >=14",
+    "python >=3.12,<3.13.0a0",
+    "python >=3.12,<3.13.0a0 *_cpython",
+    "python_abi 3.12.* *_cp312"
+  ],
+  "license": "MIT",
+  "name": "pycosat",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1757744863741,
+  "version": "0.6.6"
+}

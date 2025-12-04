@@ -1,0 +1,15 @@
+{
+  "arch": "aarch64",
+  "build": "h5ad3122_0",
+  "build_number": 0,
+  "depends": [
+    "libstdcxx >=13",
+    "libgcc >=13"
+  ],
+  "license": "MIT",
+  "name": "yaml-cpp",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1745308220432,
+  "version": "0.8.0"
+}

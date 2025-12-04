@@ -1,0 +1,53 @@
+# This file created by conda-build 3.21.8
+# ------------------------------------------------
+
+package:
+  name: _openmp_mutex
+  version: 4.5
+source:
+  - patches:
+      - patches/0021-Hardcode-HAVE_ALIGNED_ALLOC-1-in-libstdc-v3-configur.patch
+      - patches/old-allow-commands-in-main-specfile.patch
+    sha256: 6e6e0628573d2185727a2dd83211d04a2b2748e4a262099099b9c8064634c9ee
+    url: https://ftp.gnu.org/gnu/gcc/gcc-8.5.0/gcc-8.5.0.tar.gz
+build:
+  number: 16
+  run_exports:
+    strong:
+      - _openmp_mutex >=4.5
+  string: 2_gnu
+requirements:
+  build:
+    - binutils_impl_linux-aarch64 2.36.1 he24a65f_2
+    - gcc_bootstrap_linux-64 8.5.0 h7590345_9
+    - gcc_impl_linux-aarch64 8.5.0.*
+    - gfortran_impl_linux-aarch64 8.5.0.*
+    - gxx_impl_linux-aarch64 8.5.0.*
+    - kernel-headers_linux-aarch64 4.18.0 h5b4a56d_13
+    - ld_impl_linux-aarch64 2.36.1 h4e2ea54_2
+    - sysroot_linux-aarch64 2.17 h43d7e78_13
+  host:
+    - kernel-headers_linux-aarch64 4.18.0 h5b4a56d_13
+    - libgomp 8.5.0 hbf57e09_16
+    - sysroot_linux-aarch64 2.17 h43d7e78_13
+  run:
+    - libgomp >=7.5.0
+  run_constrained:
+    - openmp_impl 9999
+test:
+  commands:
+    - test -f ${PREFIX}/lib/libgomp.so.1
+    - test `readlink ${PREFIX}/lib/libgomp.so.1` == "libgomp.so.1.0.0"
+about:
+  home: https://github.com/conda-forge/ctng-compilers-feedstock
+  license: BSD-3-Clause
+  license_file: LICENSE
+  summary: OpenMP Implementation Mutex
+extra:
+  copy_test_source_files: true
+  final: true
+  recipe-maintainers:
+    - beckermr
+    - isuruf
+    - timsnyder
+    - xhochy

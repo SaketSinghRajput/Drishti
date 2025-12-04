@@ -1,0 +1,19 @@
+{
+    "arch": "aarch64",
+    "build": "he9431aa_14",
+    "build_number": 14,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc 15.2.0 h8acb6b2_14"
+    ],
+    "fn": "libgcc-ng-15.2.0-he9431aa_14.conda",
+    "license": "GPL-3.0-only WITH GCC-exception-3.1",
+    "md5": "acd92c808b9f95f5b28db20054306ba7",
+    "name": "libgcc-ng",
+    "platform": "linux",
+    "size": 27086,
+    "subdir": "linux-aarch64",
+    "timestamp": 1764276407434,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libgcc-ng-15.2.0-he9431aa_14.conda",
+    "version": "15.2.0"
+}

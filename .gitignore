@@ -156,3 +156,7 @@ dashboard/__pycache__/
 data/ble_safety_outbox.jsonl
 orchestrator.log
 *.pid
+
+brain/yes/pkgs/cache/
+*.sh
+*.solv

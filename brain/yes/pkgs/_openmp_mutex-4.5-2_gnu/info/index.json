@@ -1,0 +1,17 @@
+{
+  "arch": "aarch64",
+  "build": "2_gnu",
+  "build_number": 16,
+  "constrains": [
+    "openmp_impl 9999"
+  ],
+  "depends": [
+    "libgomp >=7.5.0"
+  ],
+  "license": "BSD-3-Clause",
+  "name": "_openmp_mutex",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1650670790230,
+  "version": "4.5"
+}

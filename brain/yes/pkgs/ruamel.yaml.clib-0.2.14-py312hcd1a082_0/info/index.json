@@ -1,0 +1,18 @@
+{
+  "arch": "aarch64",
+  "build": "py312hcd1a082_0",
+  "build_number": 0,
+  "depends": [
+    "libgcc >=14",
+    "python >=3.12,<3.13.0a0",
+    "python >=3.12,<3.13.0a0 *_cpython",
+    "python_abi 3.12.* *_cp312"
+  ],
+  "license": "MIT",
+  "license_family": "MIT",
+  "name": "ruamel.yaml.clib",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1760564351869,
+  "version": "0.2.14"
+}

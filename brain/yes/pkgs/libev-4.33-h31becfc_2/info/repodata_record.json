@@ -1,0 +1,20 @@
+{
+    "arch": "aarch64",
+    "build": "h31becfc_2",
+    "build_number": 2,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc-ng >=12"
+    ],
+    "fn": "libev-4.33-h31becfc_2.conda",
+    "license": "BSD-2-Clause",
+    "license_family": "BSD",
+    "md5": "a9a13cb143bbaa477b1ebaefbe47a302",
+    "name": "libev",
+    "platform": "linux",
+    "size": 115123,
+    "subdir": "linux-aarch64",
+    "timestamp": 1702146237623,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libev-4.33-h31becfc_2.conda",
+    "version": "4.33"
+}

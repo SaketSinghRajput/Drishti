@@ -1,0 +1,20 @@
+{
+    "arch": "aarch64",
+    "build": "hfefdfc9_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=14",
+        "libstdcxx >=14"
+    ],
+    "fn": "simdjson-4.2.2-hfefdfc9_0.conda",
+    "license": "Apache-2.0",
+    "md5": "af9d75e8c464a3264d517be412cfda65",
+    "name": "simdjson",
+    "platform": "linux",
+    "size": 259767,
+    "subdir": "linux-aarch64",
+    "timestamp": 1762971068757,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/simdjson-4.2.2-hfefdfc9_0.conda",
+    "version": "4.2.2"
+}

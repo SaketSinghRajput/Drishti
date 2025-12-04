@@ -1,0 +1,7 @@
+{
+  "target_platform": "linux-aarch64",
+  "cross_target_cxx_stdlib": "libstdcxx",
+  "channel_targets": "conda-forge main",
+  "cross_target_platform": "linux-aarch64",
+  "TARGET": "aarch64-conda-linux-gnu"
+}

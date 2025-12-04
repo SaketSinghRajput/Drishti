@@ -1,0 +1,19 @@
+{
+    "arch": "aarch64",
+    "build": "h80f16a2_1002",
+    "build_number": 1002,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=14"
+    ],
+    "fn": "lzo-2.10-h80f16a2_1002.conda",
+    "license": "GPL-2.0-or-later",
+    "md5": "97af2e332449dd9e92ad7db93b02e918",
+    "name": "lzo",
+    "platform": "linux",
+    "size": 190187,
+    "subdir": "linux-aarch64",
+    "timestamp": 1753889356434,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/lzo-2.10-h80f16a2_1002.conda",
+    "version": "2.10"
+}

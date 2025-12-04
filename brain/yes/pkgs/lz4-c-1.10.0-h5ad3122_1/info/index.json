@@ -1,0 +1,15 @@
+{
+  "arch": "aarch64",
+  "build": "h5ad3122_1",
+  "build_number": 1,
+  "depends": [
+    "libgcc >=13",
+    "libstdcxx >=13"
+  ],
+  "license": "BSD-2-Clause",
+  "name": "lz4-c",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1733740984533,
+  "version": "1.10.0"
+}

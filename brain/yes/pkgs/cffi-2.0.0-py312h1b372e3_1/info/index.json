@@ -1,0 +1,18 @@
+{
+  "arch": "aarch64",
+  "build": "py312h1b372e3_1",
+  "build_number": 1,
+  "depends": [
+    "libffi >=3.5.2,<3.6.0a0",
+    "libgcc >=14",
+    "pycparser",
+    "python >=3.12,<3.13.0a0",
+    "python_abi 3.12.* *_cp312"
+  ],
+  "license": "MIT",
+  "name": "cffi",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1761203960926,
+  "version": "2.0.0"
+}

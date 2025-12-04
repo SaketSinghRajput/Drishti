@@ -1,0 +1,31 @@
+{
+    "arch": "aarch64",
+    "build": "hdbbeba8_14",
+    "build_number": 14,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libstdcxx 15.2.0 hef695bb_14"
+    ],
+    "extracted_package_dir": "/home/pi/vishwakarma/brain/yes/pkgs/libstdcxx-ng-15.2.0-hdbbeba8_14",
+    "files": [],
+    "fn": "libstdcxx-ng-15.2.0-hdbbeba8_14.conda",
+    "license": "GPL-3.0-only WITH GCC-exception-3.1",
+    "link": {
+        "source": "/home/pi/vishwakarma/brain/yes/pkgs/libstdcxx-ng-15.2.0-hdbbeba8_14",
+        "type": 1
+    },
+    "md5": "410b06d8a2f7dd0cc1b6acdfbcf101c6",
+    "name": "libstdcxx-ng",
+    "package_tarball_full_path": "/home/pi/vishwakarma/brain/yes/pkgs/libstdcxx-ng-15.2.0-hdbbeba8_14.tar.bz2",
+    "paths_data": {
+        "paths": [],
+        "paths_version": 1
+    },
+    "platform": "linux",
+    "requested_spec": "libstdcxx-ng==15.2.0=hdbbeba8_14",
+    "size": 27126,
+    "subdir": "linux-aarch64",
+    "timestamp": 1764276483709,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libstdcxx-ng-15.2.0-hdbbeba8_14.conda",
+    "version": "15.2.0"
+}

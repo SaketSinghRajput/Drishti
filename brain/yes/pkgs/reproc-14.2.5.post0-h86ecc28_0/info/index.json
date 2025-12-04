@@ -1,0 +1,14 @@
+{
+  "arch": "aarch64",
+  "build": "h86ecc28_0",
+  "build_number": 0,
+  "depends": [
+    "libgcc >=13"
+  ],
+  "license": "MIT",
+  "name": "reproc",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1745309589538,
+  "version": "14.2.5.post0"
+}

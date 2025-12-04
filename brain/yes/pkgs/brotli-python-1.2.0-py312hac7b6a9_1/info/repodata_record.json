@@ -1,0 +1,26 @@
+{
+    "arch": "aarch64",
+    "build": "py312hac7b6a9_1",
+    "build_number": 1,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "constrains": [
+        "libbrotlicommon 1.2.0 he30d5cf_1"
+    ],
+    "depends": [
+        "libgcc >=14",
+        "libstdcxx >=14",
+        "python >=3.12,<3.13.0a0",
+        "python >=3.12,<3.13.0a0 *_cpython",
+        "python_abi 3.12.* *_cp312"
+    ],
+    "fn": "brotli-python-1.2.0-py312hac7b6a9_1.conda",
+    "license": "MIT",
+    "md5": "d64147176625536a8024e26577c5e894",
+    "name": "brotli-python",
+    "platform": "linux",
+    "size": 373800,
+    "subdir": "linux-aarch64",
+    "timestamp": 1764017545385,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/brotli-python-1.2.0-py312hac7b6a9_1.conda",
+    "version": "1.2.0"
+}

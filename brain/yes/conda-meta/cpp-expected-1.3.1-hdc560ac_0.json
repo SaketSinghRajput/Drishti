@@ -1,0 +1,66 @@
+{
+    "arch": "aarch64",
+    "build": "hdc560ac_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libstdcxx >=14",
+        "libgcc >=14"
+    ],
+    "extracted_package_dir": "/home/pi/vishwakarma/brain/yes/pkgs/cpp-expected-1.3.1-hdc560ac_0",
+    "files": [
+        "include/tl/expected.hpp",
+        "share/cmake/tl-expected/tl-expected-config-version.cmake",
+        "share/cmake/tl-expected/tl-expected-config.cmake",
+        "share/cmake/tl-expected/tl-expected-targets.cmake"
+    ],
+    "fn": "cpp-expected-1.3.1-hdc560ac_0.conda",
+    "license": "CC0-1.0",
+    "link": {
+        "source": "/home/pi/vishwakarma/brain/yes/pkgs/cpp-expected-1.3.1-hdc560ac_0",
+        "type": 1
+    },
+    "md5": "13f0be21fdd39114c28501ac21f0dd00",
+    "name": "cpp-expected",
+    "package_tarball_full_path": "/home/pi/vishwakarma/brain/yes/pkgs/cpp-expected-1.3.1-hdc560ac_0.tar.bz2",
+    "paths_data": {
+        "paths": [
+            {
+                "_path": "include/tl/expected.hpp",
+                "path_type": "hardlink",
+                "sha256": "0788f7d544a2fdec1dd7a794e1e9863ad4cc6a8817982b6fd93fd98724b9fa19",
+                "sha256_in_prefix": "0788f7d544a2fdec1dd7a794e1e9863ad4cc6a8817982b6fd93fd98724b9fa19",
+                "size_in_bytes": 94709
+            },
+            {
+                "_path": "share/cmake/tl-expected/tl-expected-config-version.cmake",
+                "path_type": "hardlink",
+                "sha256": "4b4b9bceb39058fd9079ddf7f4978185fe9e193733c29e439d8c4c1e2c5e84b8",
+                "sha256_in_prefix": "4b4b9bceb39058fd9079ddf7f4978185fe9e193733c29e439d8c4c1e2c5e84b8",
+                "size_in_bytes": 2303
+            },
+            {
+                "_path": "share/cmake/tl-expected/tl-expected-config.cmake",
+                "path_type": "hardlink",
+                "sha256": "e81d5d1be789466fbf2bebff6818ac0879ccf13ef5f4e4566f91f1cfd47e0f08",
+                "sha256_in_prefix": "e81d5d1be789466fbf2bebff6818ac0879ccf13ef5f4e4566f91f1cfd47e0f08",
+                "size_in_bytes": 949
+            },
+            {
+                "_path": "share/cmake/tl-expected/tl-expected-targets.cmake",
+                "path_type": "hardlink",
+                "sha256": "2afa846f30f0cef3c24a76d3c020d4f61ded3d1f9863b9125942c078a4b52e39",
+                "sha256_in_prefix": "2afa846f30f0cef3c24a76d3c020d4f61ded3d1f9863b9125942c078a4b52e39",
+                "size_in_bytes": 4141
+            }
+        ],
+        "paths_version": 1
+    },
+    "platform": "linux",
+    "requested_spec": "cpp-expected==1.3.1=hdc560ac_0",
+    "size": 25132,
+    "subdir": "linux-aarch64",
+    "timestamp": 1756734793606,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/cpp-expected-1.3.1-hdc560ac_0.conda",
+    "version": "1.3.1"
+}

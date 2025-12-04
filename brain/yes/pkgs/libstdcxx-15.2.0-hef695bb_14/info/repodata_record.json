@@ -1,0 +1,22 @@
+{
+    "arch": "aarch64",
+    "build": "hef695bb_14",
+    "build_number": 14,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "constrains": [
+        "libstdcxx-ng ==15.2.0=*_14"
+    ],
+    "depends": [
+        "libgcc 15.2.0 h8acb6b2_14"
+    ],
+    "fn": "libstdcxx-15.2.0-hef695bb_14.conda",
+    "license": "GPL-3.0-only WITH GCC-exception-3.1",
+    "md5": "83f466be64f6bc1f7ece406c009e0586",
+    "name": "libstdcxx",
+    "platform": "linux",
+    "size": 5542572,
+    "subdir": "linux-aarch64",
+    "timestamp": 1764276435572,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libstdcxx-15.2.0-hef695bb_14.conda",
+    "version": "15.2.0"
+}

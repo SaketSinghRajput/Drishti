@@ -1,0 +1,26 @@
+{
+    "arch": "aarch64",
+    "build": "ha888d0e_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "c-ares >=1.34.5,<2.0a0",
+        "libev >=4.33,<4.34.0a0",
+        "libev >=4.33,<5.0a0",
+        "libgcc >=14",
+        "libstdcxx >=14",
+        "libzlib >=1.3.1,<2.0a0",
+        "openssl >=3.5.2,<4.0a0"
+    ],
+    "fn": "libnghttp2-1.67.0-ha888d0e_0.conda",
+    "license": "MIT",
+    "license_family": "MIT",
+    "md5": "981082c1cc262f514a5a2cf37cab9b81",
+    "name": "libnghttp2",
+    "platform": "linux",
+    "size": 728661,
+    "subdir": "linux-aarch64",
+    "timestamp": 1756835019535,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libnghttp2-1.67.0-ha888d0e_0.conda",
+    "version": "1.67.0"
+}

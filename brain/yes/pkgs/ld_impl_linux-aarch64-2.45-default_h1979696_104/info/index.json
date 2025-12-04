@@ -1,0 +1,17 @@
+{
+  "arch": "aarch64",
+  "build": "default_h1979696_104",
+  "build_number": 104,
+  "constrains": [
+    "binutils_impl_linux-aarch64 2.45"
+  ],
+  "depends": [
+    "zstd >=1.5.7,<1.6.0a0"
+  ],
+  "license": "GPL-3.0-only",
+  "name": "ld_impl_linux-aarch64",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1764007911054,
+  "version": "2.45"
+}

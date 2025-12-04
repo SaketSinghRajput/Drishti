@@ -1,0 +1,20 @@
+{
+    "arch": "aarch64",
+    "build": "h86ecc28_1",
+    "build_number": 1,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=13"
+    ],
+    "fn": "libnsl-2.0.1-h86ecc28_1.conda",
+    "license": "LGPL-2.1-only",
+    "license_family": "GPL",
+    "md5": "d5d58b2dc3e57073fe22303f5fed4db7",
+    "name": "libnsl",
+    "platform": "linux",
+    "size": 34831,
+    "subdir": "linux-aarch64",
+    "timestamp": 1750274211000,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libnsl-2.0.1-h86ecc28_1.conda",
+    "version": "2.0.1"
+}

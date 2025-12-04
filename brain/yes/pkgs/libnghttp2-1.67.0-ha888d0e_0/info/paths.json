@@ -1,0 +1,61 @@
+{
+  "paths": [
+    {
+      "_path": "bin/nghttp",
+      "path_type": "hardlink",
+      "sha256": "741c4e1b03476e1c6fd324afe0c94d880c58baef46c01fca5b83659cbb5443e9",
+      "size_in_bytes": 389736
+    },
+    {
+      "_path": "bin/nghttpd",
+      "path_type": "hardlink",
+      "sha256": "46ec7d72cadb497b957962a92c2cdc545460e75c02f00cab608eb50749a80ad4",
+      "size_in_bytes": 396160
+    },
+    {
+      "_path": "bin/nghttpx",
+      "path_type": "hardlink",
+      "sha256": "e67b37ed3083d382dff32e1a0b10f07687af08bafda54bee66f0daa2e2e637a6",
+      "size_in_bytes": 1558464
+    },
+    {
+      "_path": "include/nghttp2/nghttp2.h",
+      "path_type": "hardlink",
+      "sha256": "d8b76c651ecae5137055ee9d31fc6a2f835e977347db6ca78592752f4439e8a2",
+      "size_in_bytes": 242354
+    },
+    {
+      "_path": "include/nghttp2/nghttp2ver.h",
+      "path_type": "hardlink",
+      "sha256": "917f300eeebe1f34e6b773aa46271e0947495d158ee16c9550ee086e8bf7bbd1",
+      "size_in_bytes": 1605
+    },
+    {
+      "_path": "lib/libnghttp2.so",
+      "path_type": "softlink",
+      "sha256": "a236912e5d842fa9f220ec243b35995ed75383964f6abb7ecf060f6f658e93f0",
+      "size_in_bytes": 294800
+    },
+    {
+      "_path": "lib/libnghttp2.so.14",
+      "path_type": "softlink",
+      "sha256": "a236912e5d842fa9f220ec243b35995ed75383964f6abb7ecf060f6f658e93f0",
+      "size_in_bytes": 294800
+    },
+    {
+      "_path": "lib/libnghttp2.so.14.29.0",
+      "path_type": "hardlink",
+      "sha256": "a236912e5d842fa9f220ec243b35995ed75383964f6abb7ecf060f6f658e93f0",
+      "size_in_bytes": 294800
+    },
+    {
+      "_path": "lib/pkgconfig/libnghttp2.pc",
+      "file_mode": "text",
+      "path_type": "hardlink",
+      "prefix_placeholder": "/home/conda/feedstock_root/build_artifacts/nghttp2_1756834692833/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_pla",
+      "sha256": "19affd73813d9c6ed4ff81a019d1d0716300cbcc4ff19d327613011ecf13a022",
+      "size_in_bytes": 1633
+    }
+  ],
+  "paths_version": 1
+}

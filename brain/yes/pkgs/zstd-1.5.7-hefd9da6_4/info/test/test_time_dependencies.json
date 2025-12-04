@@ -1,0 +1,1 @@
+["cmake", "gcc_bootstrap_linux-aarch64 14.*", "make", "pkg-config"]

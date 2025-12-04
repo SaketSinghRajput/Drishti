@@ -1,0 +1,31 @@
+{
+    "arch": "aarch64",
+    "build": "he9431aa_14",
+    "build_number": 14,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc 15.2.0 h8acb6b2_14"
+    ],
+    "extracted_package_dir": "/home/pi/vishwakarma/brain/yes/pkgs/libgcc-ng-15.2.0-he9431aa_14",
+    "files": [],
+    "fn": "libgcc-ng-15.2.0-he9431aa_14.conda",
+    "license": "GPL-3.0-only WITH GCC-exception-3.1",
+    "link": {
+        "source": "/home/pi/vishwakarma/brain/yes/pkgs/libgcc-ng-15.2.0-he9431aa_14",
+        "type": 1
+    },
+    "md5": "acd92c808b9f95f5b28db20054306ba7",
+    "name": "libgcc-ng",
+    "package_tarball_full_path": "/home/pi/vishwakarma/brain/yes/pkgs/libgcc-ng-15.2.0-he9431aa_14.tar.bz2",
+    "paths_data": {
+        "paths": [],
+        "paths_version": 1
+    },
+    "platform": "linux",
+    "requested_spec": "libgcc-ng==15.2.0=he9431aa_14",
+    "size": 27086,
+    "subdir": "linux-aarch64",
+    "timestamp": 1764276407434,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libgcc-ng-15.2.0-he9431aa_14.conda",
+    "version": "15.2.0"
+}

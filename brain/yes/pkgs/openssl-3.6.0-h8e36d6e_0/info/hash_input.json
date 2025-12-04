@@ -1,0 +1,9 @@
+{
+  "channel_targets": "conda-forge main",
+  "c_compiler_version": "14",
+  "target_platform": "linux-aarch64",
+  "openssl": "3",
+  "c_compiler": "gcc",
+  "c_stdlib_version": "2.17",
+  "c_stdlib": "sysroot"
+}

@@ -1,0 +1,16 @@
+{
+  "arch": "aarch64",
+  "build": "pl5321h976ea20_0",
+  "build_number": 0,
+  "depends": [
+    "ncurses",
+    "libgcc >=13",
+    "ncurses >=6.5,<7.0a0"
+  ],
+  "license": "BSD-2-Clause",
+  "name": "libedit",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1738479808948,
+  "version": "3.1.20250104"
+}

@@ -1,0 +1,14 @@
+{
+  "use_system_gcc": "False",
+  "openmp_ver": "4.5",
+  "glib": "2",
+  "gcc_machine": "aarch64",
+  "build_platform": "linux-64",
+  "glibc_version": "2.17",
+  "binutils_version": "2.36.1",
+  "gcc_version": "8.5.0",
+  "target_platform": "linux-aarch64",
+  "channel_targets": "conda-forge main",
+  "cross_target_platform": "linux-aarch64",
+  "libgomp_ver": "1.0.0"
+}

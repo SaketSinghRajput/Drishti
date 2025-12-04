@@ -1,0 +1,13 @@
+{
+  "c_stdlib": "sysroot",
+  "target_platform": "linux-aarch64",
+  "channel_targets": "conda-forge main",
+  "cxx_compiler": "gcc_bootstrap",
+  "bootstrap": "false",
+  "cross_target_platform": "linux-aarch64",
+  "zstd": "1.5",
+  "ctng_vendor": "conda",
+  "c_stdlib_version": "2.17",
+  "triplet": "aarch64-conda-linux-gnu",
+  "cxx_compiler_version": "14"
+}

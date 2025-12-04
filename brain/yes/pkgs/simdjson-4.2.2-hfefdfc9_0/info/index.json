@@ -1,0 +1,15 @@
+{
+  "arch": "aarch64",
+  "build": "hfefdfc9_0",
+  "build_number": 0,
+  "depends": [
+    "libgcc >=14",
+    "libstdcxx >=14"
+  ],
+  "license": "Apache-2.0",
+  "name": "simdjson",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1762971068757,
+  "version": "4.2.2"
+}

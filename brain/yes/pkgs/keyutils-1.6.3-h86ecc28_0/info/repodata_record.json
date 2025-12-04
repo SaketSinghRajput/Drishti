@@ -1,0 +1,19 @@
+{
+    "arch": "aarch64",
+    "build": "h86ecc28_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=13"
+    ],
+    "fn": "keyutils-1.6.3-h86ecc28_0.conda",
+    "license": "LGPL-2.1-or-later",
+    "md5": "e7df0aab10b9cbb73ab2a467ebfaf8c7",
+    "name": "keyutils",
+    "platform": "linux",
+    "size": 129048,
+    "subdir": "linux-aarch64",
+    "timestamp": 1754906002667,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/keyutils-1.6.3-h86ecc28_0.conda",
+    "version": "1.6.3"
+}

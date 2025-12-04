@@ -1,0 +1,71 @@
+{
+  "paths": [
+    {
+      "_path": "lib/libatomic.so",
+      "path_type": "softlink",
+      "sha256": "a291293dba6700e902dd4f185e2ea81cb7b06c2229faa0ac490606d798f87ac0",
+      "size_in_bytes": 239104
+    },
+    {
+      "_path": "lib/libatomic.so.1",
+      "path_type": "softlink",
+      "sha256": "a291293dba6700e902dd4f185e2ea81cb7b06c2229faa0ac490606d798f87ac0",
+      "size_in_bytes": 239104
+    },
+    {
+      "_path": "lib/libatomic.so.1.2.0",
+      "path_type": "hardlink",
+      "sha256": "a291293dba6700e902dd4f185e2ea81cb7b06c2229faa0ac490606d798f87ac0",
+      "size_in_bytes": 239104
+    },
+    {
+      "_path": "lib/libgcc_s.so",
+      "path_type": "hardlink",
+      "sha256": "69a56a9993b7729b29b274e65016031c81f2397f176ed5ad44d59bd50425e0bd",
+      "size_in_bytes": 132
+    },
+    {
+      "_path": "lib/libgcc_s.so.1",
+      "path_type": "hardlink",
+      "sha256": "b766c9869447d2391388a201906d303591622e7dd54be9c09b1a033094d6f2ca",
+      "size_in_bytes": 722784
+    },
+    {
+      "_path": "lib/libitm.so",
+      "path_type": "softlink",
+      "sha256": "46c5f9ae34c35370271663b47937097c3b17ab3b3d35c2441f15079875b08c69",
+      "size_in_bytes": 1012272
+    },
+    {
+      "_path": "lib/libitm.so.1",
+      "path_type": "softlink",
+      "sha256": "46c5f9ae34c35370271663b47937097c3b17ab3b3d35c2441f15079875b08c69",
+      "size_in_bytes": 1012272
+    },
+    {
+      "_path": "lib/libitm.so.1.0.0",
+      "path_type": "hardlink",
+      "sha256": "46c5f9ae34c35370271663b47937097c3b17ab3b3d35c2441f15079875b08c69",
+      "size_in_bytes": 1012272
+    },
+    {
+      "_path": "share/info/libgomp.info",
+      "path_type": "hardlink",
+      "sha256": "9183a74823a2193acf72e08915a06714ee3f6de413a6751f3cc265f2764517f6",
+      "size_in_bytes": 359250
+    },
+    {
+      "_path": "share/info/libquadmath.info",
+      "path_type": "hardlink",
+      "sha256": "a8829e58df913add53edc8ec5570a17d6800a98fb69272ba7a18d54b08ba8f48",
+      "size_in_bytes": 36603
+    },
+    {
+      "_path": "share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION",
+      "path_type": "hardlink",
+      "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74",
+      "size_in_bytes": 3324
+    }
+  ],
+  "paths_version": 1
+}

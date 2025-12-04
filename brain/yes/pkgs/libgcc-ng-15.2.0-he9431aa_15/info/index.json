@@ -1,0 +1,14 @@
+{
+  "arch": "aarch64",
+  "build": "he9431aa_15",
+  "build_number": 15,
+  "depends": [
+    "libgcc 15.2.0 h8acb6b2_15"
+  ],
+  "license": "GPL-3.0-only WITH GCC-exception-3.1",
+  "name": "libgcc-ng",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1764836155568,
+  "version": "15.2.0"
+}

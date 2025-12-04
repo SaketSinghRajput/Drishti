@@ -1,0 +1,8 @@
+{
+  "c_stdlib": "sysroot",
+  "c_compiler": "gcc",
+  "c_stdlib_version": "2.17",
+  "target_platform": "linux-aarch64",
+  "channel_targets": "conda-forge main",
+  "c_compiler_version": "13"
+}

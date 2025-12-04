@@ -1,0 +1,19 @@
+{
+    "arch": "aarch64",
+    "build": "hefd9da6_4",
+    "build_number": 4,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libzlib >=1.3.1,<2.0a0"
+    ],
+    "fn": "zstd-1.5.7-hefd9da6_4.conda",
+    "license": "BSD-3-Clause",
+    "md5": "68a63e1ba896c15344e33eacb11e1311",
+    "name": "zstd",
+    "platform": "linux",
+    "size": 552788,
+    "subdir": "linux-aarch64",
+    "timestamp": 1764431387803,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/zstd-1.5.7-hefd9da6_4.conda",
+    "version": "1.5.7"
+}

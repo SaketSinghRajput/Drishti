@@ -1,0 +1,55 @@
+{
+    "arch": "aarch64",
+    "build": "h788dabe_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "icu >=75.1,<76.0a0",
+        "libgcc >=14",
+        "libiconv >=1.18,<2.0a0",
+        "liblzma >=5.8.1,<6.0a0",
+        "libxml2-16 2.15.1 h8591a01_0",
+        "libzlib >=1.3.1,<2.0a0"
+    ],
+    "extracted_package_dir": "/home/pi/vishwakarma/brain/yes/pkgs/libxml2-2.15.1-h788dabe_0",
+    "files": [
+        "bin/xmlcatalog",
+        "bin/xmllint"
+    ],
+    "fn": "libxml2-2.15.1-h788dabe_0.conda",
+    "license": "MIT",
+    "license_family": "MIT",
+    "link": {
+        "source": "/home/pi/vishwakarma/brain/yes/pkgs/libxml2-2.15.1-h788dabe_0",
+        "type": 1
+    },
+    "md5": "a0e7779b7625b88e37df9bd73f0638dc",
+    "name": "libxml2",
+    "package_tarball_full_path": "/home/pi/vishwakarma/brain/yes/pkgs/libxml2-2.15.1-h788dabe_0.tar.bz2",
+    "paths_data": {
+        "paths": [
+            {
+                "_path": "bin/xmlcatalog",
+                "path_type": "hardlink",
+                "sha256": "f7b6244ad68d1ebe7b14ed1cb6741bedba6395ddf4ef20a2b209eede86b8589a",
+                "sha256_in_prefix": "a7dd90c727e78a35e38138e76398a97e8abbbbd739b3f4372c2685fb1668a29c",
+                "size_in_bytes": 72728
+            },
+            {
+                "_path": "bin/xmllint",
+                "path_type": "hardlink",
+                "sha256": "ca52b8330a2e1bb75eb3dc47168232be1714ac9651c97a030ea3a2d6f91f814f",
+                "sha256_in_prefix": "173e8b246346dfbb498541b30490a03ca75fb25f3152842a4c1fd8ebac8ff8c0",
+                "size_in_bytes": 147392
+            }
+        ],
+        "paths_version": 1
+    },
+    "platform": "linux",
+    "requested_spec": "libxml2==2.15.1=h788dabe_0",
+    "size": 47192,
+    "subdir": "linux-aarch64",
+    "timestamp": 1761015739999,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libxml2-2.15.1-h788dabe_0.conda",
+    "version": "2.15.1"
+}

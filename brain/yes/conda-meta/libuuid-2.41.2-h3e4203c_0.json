@@ -1,0 +1,79 @@
+{
+    "arch": "aarch64",
+    "build": "h3e4203c_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=14"
+    ],
+    "extracted_package_dir": "/home/pi/vishwakarma/brain/yes/pkgs/libuuid-2.41.2-h3e4203c_0",
+    "files": [
+        "include/uuid/uuid.h",
+        "lib/libuuid.a",
+        "lib/libuuid.so",
+        "lib/libuuid.so.1",
+        "lib/libuuid.so.1.3.0",
+        "lib/pkgconfig/uuid.pc"
+    ],
+    "fn": "libuuid-2.41.2-h3e4203c_0.conda",
+    "license": "BSD-3-Clause",
+    "link": {
+        "source": "/home/pi/vishwakarma/brain/yes/pkgs/libuuid-2.41.2-h3e4203c_0",
+        "type": 1
+    },
+    "md5": "3a68e44fdf2a2811672520fdd62996bd",
+    "name": "libuuid",
+    "package_tarball_full_path": "/home/pi/vishwakarma/brain/yes/pkgs/libuuid-2.41.2-h3e4203c_0.tar.bz2",
+    "paths_data": {
+        "paths": [
+            {
+                "_path": "include/uuid/uuid.h",
+                "path_type": "hardlink",
+                "sha256": "0f29b583df138cd9a123aa03498c8a049b71a1afcc0ff90a6dbaac44514385a4",
+                "sha256_in_prefix": "0f29b583df138cd9a123aa03498c8a049b71a1afcc0ff90a6dbaac44514385a4",
+                "size_in_bytes": 4331
+            },
+            {
+                "_path": "lib/libuuid.a",
+                "path_type": "hardlink",
+                "sha256": "121aebc5727b09f8a2abd09359a6e39e9490178a059df3df54a5cab9acdf5fb9",
+                "sha256_in_prefix": "59adde722124edcfed32b4ecbd7d202d26bb2fc43e00ce82b2c94c1524e3a581",
+                "size_in_bytes": 62788
+            },
+            {
+                "_path": "lib/libuuid.so",
+                "path_type": "softlink",
+                "sha256_in_prefix": "cff1e51e2acef06f918f23e2d33fd3bc3ada1d72fab62f5177ce2f859d188a58",
+                "size_in_bytes": 75536
+            },
+            {
+                "_path": "lib/libuuid.so.1",
+                "path_type": "softlink",
+                "sha256_in_prefix": "cff1e51e2acef06f918f23e2d33fd3bc3ada1d72fab62f5177ce2f859d188a58",
+                "size_in_bytes": 75536
+            },
+            {
+                "_path": "lib/libuuid.so.1.3.0",
+                "path_type": "hardlink",
+                "sha256": "1700fe89acbb30bb1d8ad150ab9166aaae528e10871476305f4ddf7d9fea4fdf",
+                "sha256_in_prefix": "cff1e51e2acef06f918f23e2d33fd3bc3ada1d72fab62f5177ce2f859d188a58",
+                "size_in_bytes": 75536
+            },
+            {
+                "_path": "lib/pkgconfig/uuid.pc",
+                "path_type": "hardlink",
+                "sha256": "ccbc92f33eb1ab892e7b188d318963f08bb36b5a5e3d8ce8526ac95dfe46e749",
+                "sha256_in_prefix": "fee7a2f19028f7fc2fb95f7c4925e9c3696cab08b0d51666cb455e0fb59d0223",
+                "size_in_bytes": 1223
+            }
+        ],
+        "paths_version": 1
+    },
+    "platform": "linux",
+    "requested_spec": "libuuid==2.41.2=h3e4203c_0",
+    "size": 39172,
+    "subdir": "linux-aarch64",
+    "timestamp": 1758626850999,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libuuid-2.41.2-h3e4203c_0.conda",
+    "version": "2.41.2"
+}

@@ -1,0 +1,23 @@
+{
+    "arch": "aarch64",
+    "build": "hfae3067_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "constrains": [
+        "expat 2.7.3.*"
+    ],
+    "depends": [
+        "libgcc >=14"
+    ],
+    "fn": "libexpat-2.7.3-hfae3067_0.conda",
+    "license": "MIT",
+    "license_family": "MIT",
+    "md5": "b414e36fbb7ca122030276c75fa9c34a",
+    "name": "libexpat",
+    "platform": "linux",
+    "size": 76201,
+    "subdir": "linux-aarch64",
+    "timestamp": 1763549910086,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libexpat-2.7.3-hfae3067_0.conda",
+    "version": "2.7.3"
+}

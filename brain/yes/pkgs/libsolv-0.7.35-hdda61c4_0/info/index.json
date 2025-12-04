@@ -1,0 +1,16 @@
+{
+  "arch": "aarch64",
+  "build": "hdda61c4_0",
+  "build_number": 0,
+  "depends": [
+    "libstdcxx >=14",
+    "libgcc >=14",
+    "libzlib >=1.3.1,<2.0a0"
+  ],
+  "license": "BSD-3-Clause",
+  "name": "libsolv",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1754325829284,
+  "version": "0.7.35"
+}

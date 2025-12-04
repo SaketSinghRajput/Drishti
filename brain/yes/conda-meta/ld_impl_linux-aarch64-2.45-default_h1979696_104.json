@@ -1,0 +1,51 @@
+{
+    "arch": "aarch64",
+    "build": "default_h1979696_104",
+    "build_number": 104,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "constrains": [
+        "binutils_impl_linux-aarch64 2.45"
+    ],
+    "depends": [
+        "zstd >=1.5.7,<1.6.0a0"
+    ],
+    "extracted_package_dir": "/home/pi/vishwakarma/brain/yes/pkgs/ld_impl_linux-aarch64-2.45-default_h1979696_104",
+    "files": [
+        "aarch64-conda-linux-gnu/bin/ld",
+        "bin/aarch64-conda-linux-gnu-ld"
+    ],
+    "fn": "ld_impl_linux-aarch64-2.45-default_h1979696_104.conda",
+    "license": "GPL-3.0-only",
+    "link": {
+        "source": "/home/pi/vishwakarma/brain/yes/pkgs/ld_impl_linux-aarch64-2.45-default_h1979696_104",
+        "type": 1
+    },
+    "md5": "28035705fe0c977ea33963489cd008ad",
+    "name": "ld_impl_linux-aarch64",
+    "package_tarball_full_path": "/home/pi/vishwakarma/brain/yes/pkgs/ld_impl_linux-aarch64-2.45-default_h1979696_104.tar.bz2",
+    "paths_data": {
+        "paths": [
+            {
+                "_path": "aarch64-conda-linux-gnu/bin/ld",
+                "path_type": "softlink",
+                "sha256_in_prefix": "31911d78ddce3c03b5dbc8c92b3ba345a9d74fc41649a0976cef5c569a141260",
+                "size_in_bytes": 4468720
+            },
+            {
+                "_path": "bin/aarch64-conda-linux-gnu-ld",
+                "path_type": "hardlink",
+                "sha256": "03f33fba9d053bdef62e567a0965af65c04e1e60c92bbf775455d7a2ac476574",
+                "sha256_in_prefix": "31911d78ddce3c03b5dbc8c92b3ba345a9d74fc41649a0976cef5c569a141260",
+                "size_in_bytes": 4468720
+            }
+        ],
+        "paths_version": 1
+    },
+    "platform": "linux",
+    "requested_spec": "ld_impl_linux-aarch64==2.45=default_h1979696_104",
+    "size": 875534,
+    "subdir": "linux-aarch64",
+    "timestamp": 1764007911054,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/ld_impl_linux-aarch64-2.45-default_h1979696_104.conda",
+    "version": "2.45"
+}

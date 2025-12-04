@@ -1,0 +1,19 @@
+{
+    "build": "pyh29332c3_1",
+    "build_number": 1,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "python >=3.8",
+        "python"
+    ],
+    "fn": "packaging-25.0-pyh29332c3_1.conda",
+    "license": "Apache-2.0",
+    "md5": "58335b26c38bf4a20f399384c33cbcf9",
+    "name": "packaging",
+    "noarch": "python",
+    "size": 62477,
+    "subdir": "noarch",
+    "timestamp": 1745345660407,
+    "url": "https://conda.anaconda.org/conda-forge/noarch/packaging-25.0-pyh29332c3_1.conda",
+    "version": "25.0"
+}

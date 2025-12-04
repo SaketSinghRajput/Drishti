@@ -1,0 +1,20 @@
+{
+    "arch": "aarch64",
+    "build": "h5ad3122_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libstdcxx >=13",
+        "libgcc >=13"
+    ],
+    "fn": "yaml-cpp-0.8.0-h5ad3122_0.conda",
+    "license": "MIT",
+    "md5": "b9e5a9da5729019c4f216cf0d386a70c",
+    "name": "yaml-cpp",
+    "platform": "linux",
+    "size": 213281,
+    "subdir": "linux-aarch64",
+    "timestamp": 1745308220432,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/yaml-cpp-0.8.0-h5ad3122_0.conda",
+    "version": "0.8.0"
+}

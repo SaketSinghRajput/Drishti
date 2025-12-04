@@ -1,0 +1,64 @@
+{
+    "arch": "aarch64",
+    "build": "h8591a01_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "constrains": [
+        "libxml2 2.15.1"
+    ],
+    "depends": [
+        "icu >=75.1,<76.0a0",
+        "libgcc >=14",
+        "libiconv >=1.18,<2.0a0",
+        "liblzma >=5.8.1,<6.0a0",
+        "libzlib >=1.3.1,<2.0a0"
+    ],
+    "extracted_package_dir": "/home/pi/vishwakarma/brain/yes/pkgs/libxml2-16-2.15.1-h8591a01_0",
+    "files": [
+        "etc/conda/activate.d/libxml2-split_activate.sh",
+        "lib/libxml2.so.16",
+        "lib/libxml2.so.16.1.1"
+    ],
+    "fn": "libxml2-16-2.15.1-h8591a01_0.conda",
+    "license": "MIT",
+    "license_family": "MIT",
+    "link": {
+        "source": "/home/pi/vishwakarma/brain/yes/pkgs/libxml2-16-2.15.1-h8591a01_0",
+        "type": 1
+    },
+    "md5": "e7177c6fbbf815da7b215b4cc3e70208",
+    "name": "libxml2-16",
+    "package_tarball_full_path": "/home/pi/vishwakarma/brain/yes/pkgs/libxml2-16-2.15.1-h8591a01_0.tar.bz2",
+    "paths_data": {
+        "paths": [
+            {
+                "_path": "etc/conda/activate.d/libxml2-split_activate.sh",
+                "path_type": "hardlink",
+                "sha256": "631478a9cfbd337b86ee1df94497c21821cd561312c94892d156e43f499cf5c4",
+                "sha256_in_prefix": "631478a9cfbd337b86ee1df94497c21821cd561312c94892d156e43f499cf5c4",
+                "size_in_bytes": 872
+            },
+            {
+                "_path": "lib/libxml2.so.16",
+                "path_type": "softlink",
+                "sha256_in_prefix": "f63a84ed54f716fdd77e3f1d992f0b72aca866297d1347c2b8d6dee2cde1799c",
+                "size_in_bytes": 1636704
+            },
+            {
+                "_path": "lib/libxml2.so.16.1.1",
+                "path_type": "hardlink",
+                "sha256": "200e7edf2dfb9ef722c7e2b017b0a053b701ed30f328b91bc811a595e55614da",
+                "sha256_in_prefix": "f63a84ed54f716fdd77e3f1d992f0b72aca866297d1347c2b8d6dee2cde1799c",
+                "size_in_bytes": 1636704
+            }
+        ],
+        "paths_version": 1
+    },
+    "platform": "linux",
+    "requested_spec": "libxml2-16==2.15.1=h8591a01_0",
+    "size": 597078,
+    "subdir": "linux-aarch64",
+    "timestamp": 1761015734476,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libxml2-16-2.15.1-h8591a01_0.conda",
+    "version": "2.15.1"
+}

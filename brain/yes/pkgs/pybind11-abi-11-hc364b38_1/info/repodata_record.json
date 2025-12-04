@@ -1,0 +1,16 @@
+{
+    "build": "hc364b38_1",
+    "build_number": 1,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "fn": "pybind11-abi-11-hc364b38_1.conda",
+    "license": "BSD-3-Clause",
+    "license_family": "BSD",
+    "md5": "f0599959a2447c1e544e216bddf393fa",
+    "name": "pybind11-abi",
+    "noarch": "generic",
+    "size": 14671,
+    "subdir": "noarch",
+    "timestamp": 1752769938071,
+    "url": "https://conda.anaconda.org/conda-forge/noarch/pybind11-abi-11-hc364b38_1.conda",
+    "version": "11"
+}

@@ -1,0 +1,18 @@
+{
+  "libxml2_devel": "2.14",
+  "c_compiler_version": "14",
+  "liblzma_devel": "5",
+  "zstd": "1.5",
+  "lz4_c": "1.10",
+  "target_platform": "linux-aarch64",
+  "lzo": "2",
+  "libarchive": "3.8",
+  "zlib": "1",
+  "bzip2": "1",
+  "license_family": "gpl",
+  "channel_targets": "conda-forge main",
+  "openssl": "3",
+  "c_compiler": "gcc",
+  "c_stdlib": "sysroot",
+  "c_stdlib_version": "2.17"
+}

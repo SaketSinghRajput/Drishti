@@ -1,0 +1,14 @@
+{
+  "arch": "aarch64",
+  "build": "h85ac4a6_6",
+  "build_number": 6,
+  "depends": [
+    "libzlib >=1.3.1,<2.0a0"
+  ],
+  "license": "BSD-3-Clause",
+  "name": "zstd",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1764777145593,
+  "version": "1.5.7"
+}

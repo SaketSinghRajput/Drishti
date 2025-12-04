@@ -1,0 +1,47 @@
+{
+  "paths": [
+    {
+      "_path": "include/uuid/uuid.h",
+      "path_type": "hardlink",
+      "sha256": "0f29b583df138cd9a123aa03498c8a049b71a1afcc0ff90a6dbaac44514385a4",
+      "size_in_bytes": 4331
+    },
+    {
+      "_path": "lib/libuuid.a",
+      "file_mode": "binary",
+      "path_type": "hardlink",
+      "prefix_placeholder": "/home/conda/feedstock_root/build_artifacts/libuuid_1758626678991/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_pla",
+      "sha256": "121aebc5727b09f8a2abd09359a6e39e9490178a059df3df54a5cab9acdf5fb9",
+      "size_in_bytes": 62788
+    },
+    {
+      "_path": "lib/libuuid.so",
+      "path_type": "softlink",
+      "sha256": "1700fe89acbb30bb1d8ad150ab9166aaae528e10871476305f4ddf7d9fea4fdf",
+      "size_in_bytes": 75536
+    },
+    {
+      "_path": "lib/libuuid.so.1",
+      "path_type": "softlink",
+      "sha256": "1700fe89acbb30bb1d8ad150ab9166aaae528e10871476305f4ddf7d9fea4fdf",
+      "size_in_bytes": 75536
+    },
+    {
+      "_path": "lib/libuuid.so.1.3.0",
+      "file_mode": "binary",
+      "path_type": "hardlink",
+      "prefix_placeholder": "/home/conda/feedstock_root/build_artifacts/libuuid_1758626678991/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_pla",
+      "sha256": "1700fe89acbb30bb1d8ad150ab9166aaae528e10871476305f4ddf7d9fea4fdf",
+      "size_in_bytes": 75536
+    },
+    {
+      "_path": "lib/pkgconfig/uuid.pc",
+      "file_mode": "text",
+      "path_type": "hardlink",
+      "prefix_placeholder": "/home/conda/feedstock_root/build_artifacts/libuuid_1758626678991/_h_env_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_placehold_pla",
+      "sha256": "ccbc92f33eb1ab892e7b188d318963f08bb36b5a5e3d8ce8526ac95dfe46e749",
+      "size_in_bytes": 1223
+    }
+  ],
+  "paths_version": 1
+}

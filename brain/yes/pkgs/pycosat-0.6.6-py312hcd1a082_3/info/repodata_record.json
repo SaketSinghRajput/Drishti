@@ -1,0 +1,22 @@
+{
+    "arch": "aarch64",
+    "build": "py312hcd1a082_3",
+    "build_number": 3,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=14",
+        "python >=3.12,<3.13.0a0",
+        "python >=3.12,<3.13.0a0 *_cpython",
+        "python_abi 3.12.* *_cp312"
+    ],
+    "fn": "pycosat-0.6.6-py312hcd1a082_3.conda",
+    "license": "MIT",
+    "md5": "34ca5539bd71cca41c910429ab90f2df",
+    "name": "pycosat",
+    "platform": "linux",
+    "size": 88333,
+    "subdir": "linux-aarch64",
+    "timestamp": 1757744863741,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/pycosat-0.6.6-py312hcd1a082_3.conda",
+    "version": "0.6.6"
+}

@@ -1,0 +1,16 @@
+{
+  "arch": "aarch64",
+  "build": "py312h996f985_2",
+  "build_number": 2,
+  "depends": [
+    "python >=3.12,<3.13.0a0",
+    "python >=3.12,<3.13.0a0 *_cpython",
+    "python_abi 3.12.* *_cp312"
+  ],
+  "license": "BSD-3-Clause",
+  "name": "jsonpointer",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1756754316818,
+  "version": "3.0.0"
+}

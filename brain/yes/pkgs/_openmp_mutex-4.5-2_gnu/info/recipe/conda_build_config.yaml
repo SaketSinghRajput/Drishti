@@ -1,0 +1,59 @@
+BUILD: aarch64-conda_cos7-linux-gnu
+CI: azure
+CMAKE_CROSSCOMPILING_EMULATOR: /usr/bin/qemu-aarch64-static
+CROSSCOMPILING_EMULATOR: /usr/bin/qemu-aarch64-static
+_libgcc_mutex: 0.1 conda_forge
+binutils_version: 2.36.1
+build_platform: linux-64
+c_compiler: gcc
+cdt_arch: aarch64
+cdt_name: cos7
+channel_sources: conda-forge
+channel_targets: conda-forge main
+cpu_optimization_target: nocona
+cran_mirror: https://cran.r-project.org
+cross_target_platform: linux-aarch64
+cxx_compiler: gxx
+docker_image: quay.io/condaforge/linux-anvil-cos7-x86_64
+extend_keys:
+- ignore_build_only_deps
+- ignore_version
+- extend_keys
+- pin_run_as_build
+fortran_compiler: gfortran
+gcc_build_number: '0'
+gcc_machine: aarch64
+gcc_maj_ver: '8'
+gcc_vendor: conda
+gcc_version: 8.5.0
+glib: '2'
+glibc_version: '2.17'
+ignore_build_only_deps:
+- numpy
+- python
+libgfortran_soname: '5'
+libgomp_ver: 1.0.0
+lua: '5'
+numpy: '1.16'
+old_gcc_vendor: conda_cos7
+openmp_ver: '4.5'
+perl: 5.26.2
+pin_run_as_build:
+  python:
+    min_pin: x.x
+    max_pin: x.x
+  r-base:
+    min_pin: x.x
+    max_pin: x.x
+python: '3.9'
+r_base: '3.5'
+target_platform: linux-aarch64
+use_system_gcc: 'False'
+zip_keys:
+- - glibc_version
+  - old_gcc_vendor
+  - gcc_machine
+  - cross_target_platform
+- - gcc_version
+  - gcc_maj_ver
+  - libgfortran_soname

@@ -1,0 +1,16 @@
+{
+  "arch": "aarch64",
+  "build": "h5ad3122_0",
+  "build_number": 0,
+  "depends": [
+    "libgcc >=13",
+    "libstdcxx >=13",
+    "reproc 14.2.5.post0 h86ecc28_0"
+  ],
+  "license": "MIT",
+  "name": "reproc-cpp",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1745309832653,
+  "version": "14.2.5.post0"
+}

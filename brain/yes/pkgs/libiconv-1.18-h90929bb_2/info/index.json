@@ -1,0 +1,14 @@
+{
+  "arch": "aarch64",
+  "build": "h90929bb_2",
+  "build_number": 2,
+  "depends": [
+    "libgcc >=14"
+  ],
+  "license": "LGPL-2.1-only",
+  "name": "libiconv",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1754910975665,
+  "version": "1.18"
+}

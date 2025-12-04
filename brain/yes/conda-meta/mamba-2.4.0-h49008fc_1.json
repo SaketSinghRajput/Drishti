@@ -1,0 +1,60 @@
+{
+    "arch": "aarch64",
+    "build": "h49008fc_1",
+    "build_number": 1,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libmamba ==2.4.0 h493998d_1",
+        "reproc-cpp >=14.2,<15.0a0",
+        "zstd >=1.5.7,<1.6.0a0",
+        "libmamba >=2.4.0,<2.5.0a0",
+        "reproc >=14.2,<15.0a0"
+    ],
+    "extracted_package_dir": "/home/pi/vishwakarma/brain/yes/pkgs/mamba-2.4.0-h49008fc_1",
+    "files": [
+        "bin/mamba",
+        "condabin/mamba",
+        "etc/profile.d/mamba.sh"
+    ],
+    "fn": "mamba-2.4.0-h49008fc_1.conda",
+    "license": "BSD-3-Clause",
+    "link": {
+        "source": "/home/pi/vishwakarma/brain/yes/pkgs/mamba-2.4.0-h49008fc_1",
+        "type": 1
+    },
+    "md5": "6189c03943d04c6c4b0bd20defcf794d",
+    "name": "mamba",
+    "package_tarball_full_path": "/home/pi/vishwakarma/brain/yes/pkgs/mamba-2.4.0-h49008fc_1.tar.bz2",
+    "paths_data": {
+        "paths": [
+            {
+                "_path": "bin/mamba",
+                "path_type": "hardlink",
+                "sha256": "23f87d837680e08a9e918d46c05d61add8db93312ac2e32aa9a3d663703d92f4",
+                "sha256_in_prefix": "1520f6f956d9022f8008a72e8d309328ebf09e2353cded4b37b721e519cea0ff",
+                "size_in_bytes": 2154656
+            },
+            {
+                "_path": "condabin/mamba",
+                "path_type": "softlink",
+                "sha256_in_prefix": "1520f6f956d9022f8008a72e8d309328ebf09e2353cded4b37b721e519cea0ff",
+                "size_in_bytes": 12
+            },
+            {
+                "_path": "etc/profile.d/mamba.sh",
+                "path_type": "hardlink",
+                "sha256": "3e8e950208fca1d30471debfa2bee9c56143e027bc8d9d47609260a8ff9af008",
+                "sha256_in_prefix": "9e86c5f8bdfb8cc6875a858cee9a9fed1d184234724bb101f95f23605c2ccd71",
+                "size_in_bytes": 2336
+            }
+        ],
+        "paths_version": 1
+    },
+    "platform": "linux",
+    "requested_spec": "mamba==2.4.0=h49008fc_1",
+    "size": 583215,
+    "subdir": "linux-aarch64",
+    "timestamp": 1764158577250,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/mamba-2.4.0-h49008fc_1.conda",
+    "version": "2.4.0"
+}

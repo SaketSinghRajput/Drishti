@@ -1,0 +1,19 @@
+{
+    "arch": "aarch64",
+    "build": "h90929bb_2",
+    "build_number": 2,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=14"
+    ],
+    "fn": "libiconv-1.18-h90929bb_2.conda",
+    "license": "LGPL-2.1-only",
+    "md5": "5a86bf847b9b926f3a4f203339748d78",
+    "name": "libiconv",
+    "platform": "linux",
+    "size": 791226,
+    "subdir": "linux-aarch64",
+    "timestamp": 1754910975665,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libiconv-1.18-h90929bb_2.conda",
+    "version": "1.18"
+}

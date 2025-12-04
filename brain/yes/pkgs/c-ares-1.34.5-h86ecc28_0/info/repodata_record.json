@@ -1,0 +1,20 @@
+{
+    "arch": "aarch64",
+    "build": "h86ecc28_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=13"
+    ],
+    "fn": "c-ares-1.34.5-h86ecc28_0.conda",
+    "license": "MIT",
+    "license_family": "MIT",
+    "md5": "5deaa903d46d62a1f8077ad359c3062e",
+    "name": "c-ares",
+    "platform": "linux",
+    "size": 215950,
+    "subdir": "linux-aarch64",
+    "timestamp": 1744127972012,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/c-ares-1.34.5-h86ecc28_0.conda",
+    "version": "1.34.5"
+}

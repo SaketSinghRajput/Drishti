@@ -1,0 +1,23 @@
+{
+  "paths": [
+    {
+      "_path": "lib/libgomp.so",
+      "path_type": "softlink",
+      "sha256": "74df66244f2c88056b89cb46cfeaf67a00624ddf9731413e6a5660f90697b412",
+      "size_in_bytes": 1578064
+    },
+    {
+      "_path": "lib/libgomp.so.1.0.0",
+      "path_type": "hardlink",
+      "sha256": "74df66244f2c88056b89cb46cfeaf67a00624ddf9731413e6a5660f90697b412",
+      "size_in_bytes": 1578064
+    },
+    {
+      "_path": "share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION.gomp_copy",
+      "path_type": "hardlink",
+      "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74",
+      "size_in_bytes": 3324
+    }
+  ],
+  "paths_version": 1
+}

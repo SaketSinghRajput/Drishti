@@ -1,0 +1,19 @@
+{
+    "arch": "aarch64",
+    "build": "h86ecc28_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=13"
+    ],
+    "fn": "reproc-14.2.5.post0-h86ecc28_0.conda",
+    "license": "MIT",
+    "md5": "70b14ba118c2c19b240a39577b3e607a",
+    "name": "reproc",
+    "platform": "linux",
+    "size": 36102,
+    "subdir": "linux-aarch64",
+    "timestamp": 1745309589538,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/reproc-14.2.5.post0-h86ecc28_0.conda",
+    "version": "14.2.5.post0"
+}

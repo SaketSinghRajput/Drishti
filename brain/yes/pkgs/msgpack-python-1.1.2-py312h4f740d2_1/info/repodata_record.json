@@ -1,0 +1,24 @@
+{
+    "arch": "aarch64",
+    "build": "py312h4f740d2_1",
+    "build_number": 1,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=14",
+        "libstdcxx >=14",
+        "python >=3.12,<3.13.0a0",
+        "python >=3.12,<3.13.0a0 *_cpython",
+        "python_abi 3.12.* *_cp312"
+    ],
+    "fn": "msgpack-python-1.1.2-py312h4f740d2_1.conda",
+    "license": "Apache-2.0",
+    "license_family": "Apache",
+    "md5": "fa2dab79048dfea842cb4f6eac8301fb",
+    "name": "msgpack-python",
+    "platform": "linux",
+    "size": 99305,
+    "subdir": "linux-aarch64",
+    "timestamp": 1762504246142,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/msgpack-python-1.1.2-py312h4f740d2_1.conda",
+    "version": "1.1.2"
+}

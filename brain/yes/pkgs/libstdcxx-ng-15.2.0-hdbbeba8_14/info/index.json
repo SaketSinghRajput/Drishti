@@ -1,0 +1,14 @@
+{
+  "arch": "aarch64",
+  "build": "hdbbeba8_14",
+  "build_number": 14,
+  "depends": [
+    "libstdcxx 15.2.0 hef695bb_14"
+  ],
+  "license": "GPL-3.0-only WITH GCC-exception-3.1",
+  "name": "libstdcxx-ng",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1764276483709,
+  "version": "15.2.0"
+}

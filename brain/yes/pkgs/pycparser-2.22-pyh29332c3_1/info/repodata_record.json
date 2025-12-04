@@ -1,0 +1,19 @@
+{
+    "build": "pyh29332c3_1",
+    "build_number": 1,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "python >=3.9",
+        "python"
+    ],
+    "fn": "pycparser-2.22-pyh29332c3_1.conda",
+    "license": "BSD-3-Clause",
+    "md5": "12c566707c80111f9799308d9e265aef",
+    "name": "pycparser",
+    "noarch": "python",
+    "size": 110100,
+    "subdir": "noarch",
+    "timestamp": 1733195786147,
+    "url": "https://conda.anaconda.org/conda-forge/noarch/pycparser-2.22-pyh29332c3_1.conda",
+    "version": "2.22"
+}

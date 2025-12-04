@@ -1,0 +1,14 @@
+{
+  "arch": "aarch64",
+  "build": "hd65408f_0",
+  "build_number": 0,
+  "depends": [
+    "libgcc >=14"
+  ],
+  "license": "MIT",
+  "name": "libffi",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1760295405021,
+  "version": "3.5.2"
+}

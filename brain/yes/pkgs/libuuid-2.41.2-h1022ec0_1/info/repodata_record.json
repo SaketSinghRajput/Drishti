@@ -1,0 +1,22 @@
+{
+    "arch": "aarch64",
+    "build": "h1022ec0_1",
+    "build_number": 1,
+    "build_string": "h1022ec0_1",
+    "channel": "conda-forge",
+    "depends": [
+        "libgcc >=14"
+    ],
+    "fn": "libuuid-2.41.2-h1022ec0_1.conda",
+    "license": "BSD-3-Clause",
+    "md5": "15b2cc72b9b05bcb141810b1bada654f",
+    "name": "libuuid",
+    "platform": "linux",
+    "sha256": "3113c857e36779d94cf9a18236a710ceca0e94230b3bfeba0d134f33ee8c9ecd",
+    "size": 43415,
+    "subdir": "linux-aarch64",
+    "timestamp": 1764790752,
+    "track_features": "",
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libuuid-2.41.2-h1022ec0_1.conda",
+    "version": "2.41.2"
+}

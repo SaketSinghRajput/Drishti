@@ -1,0 +1,21 @@
+{
+  "arch": "aarch64",
+  "build": "py312hac7b6a9_1",
+  "build_number": 1,
+  "constrains": [
+    "libbrotlicommon 1.2.0 he30d5cf_1"
+  ],
+  "depends": [
+    "libgcc >=14",
+    "libstdcxx >=14",
+    "python >=3.12,<3.13.0a0",
+    "python >=3.12,<3.13.0a0 *_cpython",
+    "python_abi 3.12.* *_cp312"
+  ],
+  "license": "MIT",
+  "name": "brotli-python",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1764017545385,
+  "version": "1.2.0"
+}

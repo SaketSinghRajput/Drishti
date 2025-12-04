@@ -1,0 +1,21 @@
+{
+    "arch": "aarch64",
+    "build": "h8e36d6e_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "ca-certificates",
+        "libgcc >=14"
+    ],
+    "fn": "openssl-3.6.0-h8e36d6e_0.conda",
+    "license": "Apache-2.0",
+    "license_family": "Apache",
+    "md5": "7624c6e01aecba942e9115e0f5a2af9d",
+    "name": "openssl",
+    "platform": "linux",
+    "size": 3705625,
+    "subdir": "linux-aarch64",
+    "timestamp": 1762841024958,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/openssl-3.6.0-h8e36d6e_0.conda",
+    "version": "3.6.0"
+}

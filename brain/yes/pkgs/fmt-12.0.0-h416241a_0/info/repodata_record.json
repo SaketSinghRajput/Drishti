@@ -1,0 +1,21 @@
+{
+    "arch": "aarch64",
+    "build": "h416241a_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=14",
+        "libstdcxx >=14"
+    ],
+    "fn": "fmt-12.0.0-h416241a_0.conda",
+    "license": "MIT",
+    "license_family": "MIT",
+    "md5": "16e5ddbcf5ccea402f82fb859e369978",
+    "name": "fmt",
+    "platform": "linux",
+    "size": 195671,
+    "subdir": "linux-aarch64",
+    "timestamp": 1760369804829,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/fmt-12.0.0-h416241a_0.conda",
+    "version": "12.0.0"
+}

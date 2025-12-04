@@ -1,0 +1,18 @@
+{
+  "arch": "aarch64",
+  "build": "hfae3067_0",
+  "build_number": 0,
+  "constrains": [
+    "expat 2.7.3.*"
+  ],
+  "depends": [
+    "libgcc >=14"
+  ],
+  "license": "MIT",
+  "license_family": "MIT",
+  "name": "libexpat",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1763549910086,
+  "version": "2.7.3"
+}

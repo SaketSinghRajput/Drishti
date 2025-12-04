@@ -1,0 +1,14 @@
+{
+  "arch": "aarch64",
+  "build": "h86ecc28_0",
+  "build_number": 0,
+  "depends": [
+    "libgcc >=13"
+  ],
+  "license": "LGPL-2.1-or-later",
+  "name": "keyutils",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1754906002667,
+  "version": "1.6.3"
+}

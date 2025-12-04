@@ -1,0 +1,16 @@
+{
+  "arch": "aarch64",
+  "build": "h8e36d6e_0",
+  "build_number": 0,
+  "depends": [
+    "ca-certificates",
+    "libgcc >=14"
+  ],
+  "license": "Apache-2.0",
+  "license_family": "Apache",
+  "name": "openssl",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1762841024958,
+  "version": "3.6.0"
+}

@@ -1,0 +1,24 @@
+{
+    "arch": "aarch64",
+    "build": "h50a48e9_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "keyutils >=1.6.1,<2.0a0",
+        "libedit >=3.1.20191231,<3.2.0a0",
+        "libedit >=3.1.20191231,<4.0a0",
+        "libgcc-ng >=12",
+        "libstdcxx-ng >=12",
+        "openssl >=3.3.1,<4.0a0"
+    ],
+    "fn": "krb5-1.21.3-h50a48e9_0.conda",
+    "license": "MIT",
+    "md5": "29c10432a2ca1472b53f299ffb2ffa37",
+    "name": "krb5",
+    "platform": "linux",
+    "size": 1474620,
+    "subdir": "linux-aarch64",
+    "timestamp": 1719463205834,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/krb5-1.21.3-h50a48e9_0.conda",
+    "version": "1.21.3"
+}

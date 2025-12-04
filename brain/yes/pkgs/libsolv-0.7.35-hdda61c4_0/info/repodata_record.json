@@ -1,0 +1,21 @@
+{
+    "arch": "aarch64",
+    "build": "hdda61c4_0",
+    "build_number": 0,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libstdcxx >=14",
+        "libgcc >=14",
+        "libzlib >=1.3.1,<2.0a0"
+    ],
+    "fn": "libsolv-0.7.35-hdda61c4_0.conda",
+    "license": "BSD-3-Clause",
+    "md5": "3e817cbcc10f018c547a1b4885094b15",
+    "name": "libsolv",
+    "platform": "linux",
+    "size": 535157,
+    "subdir": "linux-aarch64",
+    "timestamp": 1754325829284,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/libsolv-0.7.35-hdda61c4_0.conda",
+    "version": "0.7.35"
+}

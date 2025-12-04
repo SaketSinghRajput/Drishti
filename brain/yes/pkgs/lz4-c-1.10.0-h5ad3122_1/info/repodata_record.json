@@ -1,0 +1,20 @@
+{
+    "arch": "aarch64",
+    "build": "h5ad3122_1",
+    "build_number": 1,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "depends": [
+        "libgcc >=13",
+        "libstdcxx >=13"
+    ],
+    "fn": "lz4-c-1.10.0-h5ad3122_1.conda",
+    "license": "BSD-2-Clause",
+    "md5": "6654e411da94011e8fbe004eacb8fe11",
+    "name": "lz4-c",
+    "platform": "linux",
+    "size": 184953,
+    "subdir": "linux-aarch64",
+    "timestamp": 1733740984533,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/lz4-c-1.10.0-h5ad3122_1.conda",
+    "version": "1.10.0"
+}

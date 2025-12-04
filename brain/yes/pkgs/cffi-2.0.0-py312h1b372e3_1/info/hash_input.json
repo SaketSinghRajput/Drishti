@@ -1,0 +1,10 @@
+{
+  "libffi": "3.5",
+  "c_stdlib_version": "2.17",
+  "python": "3.12.* *_cpython",
+  "c_compiler": "gcc",
+  "channel_targets": "conda-forge main",
+  "target_platform": "linux-aarch64",
+  "c_stdlib": "sysroot",
+  "c_compiler_version": "14"
+}

@@ -1,0 +1,18 @@
+{
+  "arch": "aarch64",
+  "build": "h49008fc_1",
+  "build_number": 1,
+  "depends": [
+    "libmamba ==2.4.0 h493998d_1",
+    "reproc-cpp >=14.2,<15.0a0",
+    "zstd >=1.5.7,<1.6.0a0",
+    "libmamba >=2.4.0,<2.5.0a0",
+    "reproc >=14.2,<15.0a0"
+  ],
+  "license": "BSD-3-Clause",
+  "name": "mamba",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1764158577250,
+  "version": "2.4.0"
+}

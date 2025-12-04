@@ -1,0 +1,14 @@
+{
+  "arch": "aarch64",
+  "build": "h31becfc_1",
+  "build_number": 1,
+  "depends": [
+    "libgcc-ng >=12"
+  ],
+  "license": "LGPL-2.1-or-later",
+  "name": "libxcrypt",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1702724369203,
+  "version": "4.4.36"
+}

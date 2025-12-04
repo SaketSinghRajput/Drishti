@@ -1,0 +1,17 @@
+{
+  "arch": "aarch64",
+  "build": "h86ecc28_2",
+  "build_number": 2,
+  "constrains": [
+    "xz 5.8.1.*"
+  ],
+  "depends": [
+    "libgcc >=13"
+  ],
+  "license": "0BSD",
+  "name": "liblzma",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1749232230009,
+  "version": "5.8.1"
+}

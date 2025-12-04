@@ -1,0 +1,15 @@
+{
+  "arch": "aarch64",
+  "build": "h86ecc28_1",
+  "build_number": 1,
+  "depends": [
+    "libgcc >=13"
+  ],
+  "license": "LGPL-2.1-only",
+  "license_family": "GPL",
+  "name": "libnsl",
+  "platform": "linux",
+  "subdir": "linux-aarch64",
+  "timestamp": 1750274211000,
+  "version": "2.0.1"
+}

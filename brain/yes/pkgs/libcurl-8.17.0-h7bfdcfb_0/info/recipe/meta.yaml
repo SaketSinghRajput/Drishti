@@ -1,0 +1,102 @@
+# This file created by conda-build 25.9.0
+# ------------------------------------------------
+
+package:
+  name: libcurl
+  version: 8.17.0
+source:
+  url: http://curl.haxx.se/download/curl-8.17.0.tar.bz2
+  sha256: 230032528ce5f85594d4f3eace63364c4244ccc3c801b7f8db1982722f2761f4
+build:
+  run_exports:
+    - libcurl >=8.17.0,<9.0a0
+  number: 0
+  string: h7bfdcfb_0
+requirements:
+  build:
+    - _libgcc_mutex 0.1 conda_forge
+    - _openmp_mutex 4.5 2_gnu
+    - binutils_impl_linux-64 2.44 h9d8b0ac_4
+    - binutils_impl_linux-aarch64 2.44 h9cccbb2_4
+    - binutils_linux-aarch64 2.44 h7726a90_4
+    - gcc_impl_linux-64 14.3.0 hd9e9e21_7
+    - gcc_impl_linux-aarch64 14.3.0 h6bc76fe_7
+    - gcc_linux-aarch64 14.3.0 hc6a817b_12
+    - kernel-headers_linux-64 5.14.0 he073ed8_2
+    - kernel-headers_linux-aarch64 4.18.0 h05a177a_18
+    - ld_impl_linux-64 2.44 h1aa0949_4
+    - ld_impl_linux-aarch64 2.44 h01683cd_4
+    - libgcc 15.2.0 h767d61c_7
+    - libgcc-devel_linux-64 14.3.0 h85bb3a7_107
+    - libgcc-devel_linux-aarch64 14.3.0 hca7fddf_7
+    - libgomp 15.2.0 h767d61c_7
+    - libsanitizer 14.3.0 hd08acf3_7
+    - libstdcxx 15.2.0 h8f9b012_7
+    - libzlib 1.3.1 hb9d3cd8_2
+    - sysroot_linux-64 2.34 h087de78_2
+    - sysroot_linux-aarch64 2.17 h68829e0_18
+    - tzdata 2025b h78e105d_0
+    - zstd 1.5.7 hb8e6e7a_2
+  host:
+    - _openmp_mutex 4.5 2_gnu
+    - c-ares 1.34.5 h86ecc28_0
+    - ca-certificates 2025.10.5 hbd8a1cb_0
+    - keyutils 1.6.3 h86ecc28_0
+    - krb5 1.21.3 h50a48e9_0
+    - libedit 3.1.20250104 pl5321h976ea20_0
+    - libev 4.33 h31becfc_2
+    - libgcc 15.2.0 he277a41_7
+    - libgcc-ng 15.2.0 he9431aa_7
+    - libgomp 15.2.0 he277a41_7
+    - libnghttp2 1.67.0 ha888d0e_0
+    - libssh2 1.11.1 h18c354c_0
+    - libstdcxx 15.2.0 h3f4de04_7
+    - libstdcxx-ng 15.2.0 hf1166c9_7
+    - libzlib 1.3.1 h86ecc28_2
+    - ncurses 6.5 ha32ae93_3
+    - openssl 3.5.4 h8e36d6e_0
+    - zlib 1.3.1 h86ecc28_2
+    - zstd 1.5.7 hbcf94c1_2
+  run:
+    - krb5 >=1.21.3,<1.22.0a0
+    - libgcc >=14
+    - libnghttp2 >=1.67.0,<2.0a0
+    - libssh2 >=1.11.1,<2.0a0
+    - libzlib >=1.3.1,<2.0a0
+    - openssl >=3.5.4,<4.0a0
+    - zstd >=1.5.7,<1.6.0a0
+test:
+  commands:
+    - curl-config --features
+    - curl-config --protocols
+    - test -f ${PREFIX}/lib/libcurl${SHLIB_EXT}
+    - test ! -f ${PREFIX}/lib/libcurl.a
+    - CURL_SSL_BACKENDS=$(curl-config --ssl-backends)
+    - if ! echo $CURL_SSL_BACKENDS | grep -q "OpenSSL"; then exit 1; fi
+about:
+  home: http://curl.haxx.se/
+  license: curl
+  license_family: MIT
+  license_file: COPYING
+  summary: tool and library for transferring data with URL syntax
+  description: 'Curl is an open source command line tool and library for transferring
+    data
+
+    with URL syntax. It is used in command lines or scripts to transfer data.
+
+    '
+  doc_url: https://curl.haxx.se/docs/
+  dev_url: https://github.com/curl/curl
+  doc_source_url: https://github.com/curl/curl/tree/master/docs
+extra:
+  recipe-maintainers:
+    - jakirkham
+    - mingwandroid
+    - msarahan
+    - ocefpaf
+    - xylar
+  final: true
+  copy_test_source_files: true
+  flow_run_id: azure_20251105.4.1
+  remote_url: https://github.com/conda-forge/curl-feedstock
+  sha: 724520091aa0f0b55586078f7cea4065d877a448

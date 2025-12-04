@@ -1,0 +1,13 @@
+{
+  "channels": [
+    "https://conda.anaconda.org/conda-forge/"
+  ],
+  "extra": {
+    "flow_run_id": "azure_20251203.13.1",
+    "remote_url": "https://github.com/conda-forge/libuuid-feedstock",
+    "sha": "c0ee4ead394292de0dfaa25bd536a0ed5cfa8998"
+  },
+  "home": "http://sourceforge.net/projects/libuuid/",
+  "license": "BSD-3-Clause",
+  "summary": "Portable uuid C library."
+}

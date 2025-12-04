@@ -1,0 +1,22 @@
+{
+    "arch": "aarch64",
+    "build": "default_h1979696_104",
+    "build_number": 104,
+    "channel": "https://conda.anaconda.org/conda-forge",
+    "constrains": [
+        "binutils_impl_linux-aarch64 2.45"
+    ],
+    "depends": [
+        "zstd >=1.5.7,<1.6.0a0"
+    ],
+    "fn": "ld_impl_linux-aarch64-2.45-default_h1979696_104.conda",
+    "license": "GPL-3.0-only",
+    "md5": "28035705fe0c977ea33963489cd008ad",
+    "name": "ld_impl_linux-aarch64",
+    "platform": "linux",
+    "size": 875534,
+    "subdir": "linux-aarch64",
+    "timestamp": 1764007911054,
+    "url": "https://conda.anaconda.org/conda-forge/linux-aarch64/ld_impl_linux-aarch64-2.45-default_h1979696_104.conda",
+    "version": "2.45"
+}

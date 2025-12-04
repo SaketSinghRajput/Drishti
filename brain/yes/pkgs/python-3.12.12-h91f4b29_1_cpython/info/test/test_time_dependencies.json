@@ -1,0 +1,1 @@
+["cmake", "xorg-libx11", "ninja", "sysroot_linux-aarch64 2.17.*", "ripgrep", "gxx_linux-aarch64 14.*", "gcc_linux-aarch64 14.*"]
