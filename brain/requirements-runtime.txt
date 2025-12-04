@@ -31,9 +31,6 @@ Pillow>=10.0.0
 imutils>=0.5.4
 
 # Model inference
-onnx>=1.14.0
-onnxruntime>=1.15.0
-tf2onnx>=1.15.0
 
 # Explainability
 shap>=0.42.0
