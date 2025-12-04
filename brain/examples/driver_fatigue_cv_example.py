@@ -8,16 +8,15 @@ import argparse
 import time
 import os
 import sys
+import pathlib
 
-# Ensure repository `brain/` package root is on sys.path when running the
-# example as a script (python examples/driver_fatigue_cv_example.py). When a
-# script is executed directly, sys.path[0] is the script directory which means
-# sibling packages like `data_collection` are not importable. Prepend the
-# parent directory (the `brain` package root) so absolute imports work.
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-if REPO_ROOT not in sys.path:
-    sys.path.insert(0, REPO_ROOT)
+# Ensure repository root (two levels up) is on sys.path so absolute imports
+# such as `brain.utils...` work when running this script from inside `brain/`.
+# This inserts the repository root (project folder) rather than the `brain`
+# package directory itself.
+_REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from data_collection.sensors.driver_fatigue_handler import DriverFatigueHandler
 from config.config_loader import ConfigLoader
