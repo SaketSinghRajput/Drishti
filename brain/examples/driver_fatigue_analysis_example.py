@@ -4,6 +4,16 @@ Generates synthetic driver_fatigue samples and runs the adapter to show
 computed features.
 """
 import json
+import sys
+import pathlib
+
+# Ensure repository root (two levels up) is on sys.path so top-level
+# packages like `config` and `data_collection` are importable when
+# running this example from `brain/`.
+_REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 from config.config_loader import ConfigLoader
 from data_collection.driver_fatigue_adapter import DriverFatigueAdapter
 from utils.time_utils import get_utc_timestamp

@@ -31,6 +31,53 @@ Pillow>=10.0.0
 imutils>=0.5.4
 
 # Model inference
+# NOTE: `onnx` frequently requires building from source on Raspberry Pi
+# and often has no prebuilt wheel for newer Python versions (e.g. 3.13).
+# Installing `onnx` with `pip` may attempt a heavy C++ build (cmake, protobuf,
+# abseil) and fail with compiler/include errors (example: missing <cstdint>). To
+# avoid blocking `pip install -r requirements-runtime.txt` we comment it out
+# here. If you need `onnx` on your Pi follow one of the options below.
+# onnx>=1.14.0
+onnxruntime>=1.15.0
+tf2onnx>=1.15.0
+
+
+# --- How to get ONNX on Raspberry Pi (choose one) ---------------------------
+# Option A — Preferred: avoid building ONNX; use ONNX Runtime or export
+# models on a desktop and copy the .onnx files to the Pi. `onnxruntime` here
+# provides runtime inference and has better wheel support for ARM.
+#   pip install onnxruntime
+#
+# Option B — If you must install `onnx` on-device (build from source):
+# 1) Use a supported Python version (recommend Python 3.11 or 3.9). Newer
+#    interpreters (e.g. 3.13) often lack prebuilt wheels for many deps.
+#
+# 2) Install system build deps (run on the Pi):
+#    sudo apt-get update; sudo apt-get install -y \
+#      build-essential cmake pkg-config git python3-dev python3-venv \
+#      libprotobuf-dev protobuf-compiler libprotoc-dev libssl-dev libffi-dev \
+#      libblas-dev liblapack-dev libatlas-base-dev
+#
+# 3) Create and use a Python 3.11 venv, then upgrade packaging tools:
+#    python3.11 -m venv ~/venv311
+#    source ~/venv311/bin/activate
+#    pip install --upgrade pip setuptools wheel cmake
+#
+# 4) Try installing a prebuilt wheel first (may succeed):
+#    pip install --prefer-binary onnx
+#
+# 5) If no wheel is available, build with pip (expect long compile times):
+#    # This will invoke cmake and build protobuf and onnx from source
+#    pip install --no-cache-dir --verbose onnx
+#
+# 6) If the build fails with protobuf/port.h errors (missing <cstdint>) then
+#    ensure system headers are present (libstdc++ and dev headers). Using the
+#    system `libprotobuf-dev` via CMake options can also help, but is advanced.
+#
+# Option C — Cross-build or build on a stronger machine and copy wheels:
+#    Build ONNX on an aarch64 builder (or use wheels from a trusted index)
+#    and install the wheel on the Pi with `pip install /path/to/onnx.whl`.
+# -------------------------------------------------------------------------
 
 # Explainability
 shap>=0.42.0

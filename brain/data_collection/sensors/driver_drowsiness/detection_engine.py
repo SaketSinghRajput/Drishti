@@ -139,9 +139,28 @@ class DrowsinessDetector:
                             rgb = cv2.resize(rgb, (320, 240))
                     except Exception:
                         pass
-                    results = self._mp_face_mesh.process(rgb)
+                    try:
+                        results = self._mp_face_mesh.process(rgb)
+                    except Exception as e:
+                        # Catch MediaPipe graph errors (missing .tflite models on some installs)
+                        msg = str(e)
+                        if "Can't find file" in msg or "Graph has errors" in msg or "LocalFileContentsCalculator" in msg:
+                            logger.warning("MediaPipe graph error detected (%s). Disabling MediaPipe and switching to Haar-cascade fallback.", msg)
+                            # disable MediaPipe for future frames and attempt to load cascades
+                            self._initialized = False
+                            try:
+                                self._face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+                                self._eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_eye.xml")
+                                logger.info("Loaded Haar cascades for fallback after MediaPipe failure")
+                            except Exception:
+                                logger.exception("Failed to load Haar cascades after MediaPipe failure")
+                            # fall through to fallback processing below
+                            results = None
+                        else:
+                            # unknown MediaPipe error: re-raise to outer handler
+                            raise
                     if not results or not results.multi_face_landmarks:
-                        return {"ear": 0.0, "mar": 0.0, "head_pose": {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}, "confidence": 0.0, "no_face_detected": True, "blinks_detected": 0, "yawns_detected": 0, "total_blinks": self._blink_total, "total_yawns": self._yawn_total, "micro_sleep_flag": False}
+                        return {"ear": 0.0, "mar": 0.0, "head_pose": {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}, "confidence": 0.0, "no_face_detected": True, "blinks_detected": 0, "yawns_detected": 0, "total_blinks": self._blink_total, "total_yawns": self._yawn_total, "micro_sleep_flag": False, "backend_used": "mediapipe"}
                     lm = results.multi_face_landmarks[0]
                     # Extract a few landmarks for EAR/MAR approximations
                     # MediaPipe landmarks are relative to the processed image (rgb).
@@ -231,6 +250,7 @@ class DrowsinessDetector:
                         "total_blinks": int(self._blink_total),
                         "total_yawns": int(self._yawn_total),
                         "micro_sleep_flag": bool(self._micro_sleep_flag),
+                        "backend_used": "mediapipe",
                     }
                 else:
                     # Fallback: try Haar cascade face+eye detection (more useful than pure brightness)
@@ -269,7 +289,7 @@ class DrowsinessDetector:
                             mar = 0.2 if mean < 120 else 0.4
                             confidence = 0.2
                         head_pose = {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}
-                        return {"ear": ear, "mar": mar, "head_pose": head_pose, "confidence": float(confidence), "no_face_detected": not bool(detected), "blinks_detected": 0, "yawns_detected": 0, "total_blinks": int(self._blink_total), "total_yawns": int(self._yawn_total), "micro_sleep_flag": False}
+                        return {"ear": ear, "mar": mar, "head_pose": head_pose, "confidence": float(confidence), "no_face_detected": not bool(detected), "blinks_detected": 0, "yawns_detected": 0, "total_blinks": int(self._blink_total), "total_yawns": int(self._yawn_total), "micro_sleep_flag": False, "backend_used": "haar_fallback"}
                     except Exception:
                         # worst-case fallback: brightness heuristic
                         gray = frame_in[:, :, 0] if frame_in.ndim == 3 else frame_in
@@ -277,7 +297,7 @@ class DrowsinessDetector:
                         ear = 0.3 if mean > 30 else 0.1
                         mar = 0.2 if mean < 120 else 0.4
                         head_pose = {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}
-                        return {"ear": ear, "mar": mar, "head_pose": head_pose, "confidence": 0.2, "no_face_detected": False, "blinks_detected": 0, "yawns_detected": 0, "total_blinks": int(self._blink_total), "total_yawns": int(self._yawn_total), "micro_sleep_flag": False}
+                        return {"ear": ear, "mar": mar, "head_pose": head_pose, "confidence": 0.2, "no_face_detected": False, "blinks_detected": 0, "yawns_detected": 0, "total_blinks": int(self._blink_total), "total_yawns": int(self._yawn_total), "micro_sleep_flag": False, "backend_used": "heuristic"}
             except Exception:
                 logger.exception("Detection failed")
-                return {"ear": 0.0, "mar": 0.0, "head_pose": {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}, "blink": False, "yawn": False, "micro_sleep": False, "blink_count": self._blink_total, "yawn_count": self._yawn_total, "confidence": 0.0, "no_face_detected": True}
+                return {"ear": 0.0, "mar": 0.0, "head_pose": {"pitch": 0.0, "yaw": 0.0, "roll": 0.0}, "blink": False, "yawn": False, "micro_sleep": False, "blink_count": self._blink_total, "yawn_count": self._yawn_total, "confidence": 0.0, "no_face_detected": True, "backend_used": "unknown"}
