@@ -52,14 +52,46 @@ def display_devices(devices: List[BLEDevice]) -> List[BLEDevice]:
         print("No BLE devices found.")
         return []
 
-    # Sort by RSSI (best first); some devices may have None for rssi
-    devices_sorted = sorted(devices, key=lambda d: (d.rssi if d.rssi is not None else -9999), reverse=True)
+    def get_device_rssi(d: BLEDevice) -> Optional[int]:
+        # Try multiple locations for RSSI to support different bleak versions/platforms
+        try:
+            v = getattr(d, "rssi", None)
+            if v is not None:
+                return int(v)
+        except Exception:
+            pass
+        # Some backends expose RSSI in metadata
+        try:
+            meta = getattr(d, "metadata", None)
+            if isinstance(meta, dict) and "rssi" in meta and meta["rssi"] is not None:
+                return int(meta["rssi"])
+        except Exception:
+            pass
+        # Advertisement data may carry rssi in some bleak versions
+        try:
+            ad = getattr(d, "advertisement_data", None)
+            if ad is not None and hasattr(ad, "rssi"):
+                return int(getattr(ad, "rssi"))
+        except Exception:
+            pass
+        # Last resort: try details dict
+        try:
+            details = getattr(d, "details", None)
+            if isinstance(details, dict) and "rssi" in details and details["rssi"] is not None:
+                return int(details["rssi"])
+        except Exception:
+            pass
+        return None
+
+    # Sort by RSSI (best first); some devices may not expose RSSI
+    devices_sorted = sorted(devices, key=lambda d: (get_device_rssi(d) if get_device_rssi(d) is not None else -9999), reverse=True)
 
     print("\n=== Nearby BLE Devices ===")
     for idx, dev in enumerate(devices_sorted, start=1):
         name = dev.name if dev.name else "Unknown"
         addr = dev.address
-        rssi = f"{dev.rssi} dBm" if dev.rssi is not None else "N/A"
+        r = get_device_rssi(dev)
+        rssi = f"{r} dBm" if r is not None else "N/A"
         print(f"[{idx}] {name} ({addr}) RSSI: {rssi}")
     return devices_sorted
 
