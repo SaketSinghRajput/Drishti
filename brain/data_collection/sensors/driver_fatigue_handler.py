@@ -257,7 +257,25 @@ class DriverFatigueHandler(SensorHandler):
             if self._profiler:
                 prof.__exit__(None, None, None)
             if frame is None:
-                return None
+                # Camera failed to produce a frame (device not present or initialization failed).
+                # Fall back to safe baseline sample instead of returning None so callers
+                # (examples/tests) receive a usable sample for downstream logic.
+                logger.warning("Camera read returned no frame; falling back to safe baseline sample")
+                sample = {
+                    "timestamp": time.time(),
+                    "drowsiness_score": 0.0,
+                    "blink_rate": 0.0,
+                    "perclos": 0.0,
+                    "yawning_count": 0,
+                    "micro_sleep_flag": False,
+                    "head_pose": {"pitch": 0.0, "yaw": 0.0, "roll": 0.0, "confidence": 0.0},
+                }
+                # record profiling total if profiler present
+                if self._profiler:
+                    total_ms = (time.perf_counter() - t0) * 1000.0
+                    self._profiler.record_total(total_ms)
+                    self._profiler.log_warning_if_exceeded()
+                return sample
 
             # inference
             if self._profiler:

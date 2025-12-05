@@ -1,0 +1,107 @@
+{
+  "_notes": "All timestamps `ts` are Unix epoch milliseconds (ms since 1970-01-01T00:00:00Z).\nNote: The production sender uses the field name 'vehicle_hash' for the vehicle identifier; test packets may use 'vid' or compact 'v'. The receiver accepts all three aliases.",
+  "full_packet": {
+    "vid": "ab12cd34",
+    "vehicle_hash": "ab12cd34",
+    "fatigue": 62,
+    "risk": 64,
+    "battery_severity": "low",
+    "max_cell_temp": 41.2,
+    "ble_neighbors": 3,
+    "lat": 12.9715987,
+    "lon": 77.594566,
+    "speed": 11.11,
+    "ts": 1733318400000
+  },
+  "sender_format_packet": {
+    "vehicle_hash": "sender1234",
+    "fatigue": 48,
+    "risk": 40,
+    "battery_severity": "medium",
+    "max_cell_temp": 38.0,
+    "ble_neighbors": 4,
+    "lat": 35.689487,
+    "lon": 139.691711,
+    "speed": 10.0,
+    "ts": 1733318800000
+  },
+  "normal_driving": {
+    "vid": "normal001",
+    "fatigue": 18,
+    "risk": 12,
+    "battery_severity": "low",
+    "max_cell_temp": 36.5,
+    "ble_neighbors": 2,
+    "lat": 51.507351,
+    "lon": -0.127758,
+    "speed": 13.9,
+    "ts": 1733318600000
+  },
+  "critical_battery": {
+    "vid": "critbat01",
+    "fatigue": 40,
+    "risk": 55,
+    "battery_severity": "critical",
+    "max_cell_temp": 45.0,
+    "ble_neighbors": 0,
+    "lat": 34.052235,
+    "lon": -118.243683,
+    "speed": 0.0,
+    "ts": 1733318660000
+  },
+  "multiple_neighbors": {
+    "vid": "multinbr",
+    "fatigue": 30,
+    "risk": 28,
+    "battery_severity": "medium",
+    "max_cell_temp": 39.0,
+    "ble_neighbors": 12,
+    "lat": 48.856613,
+    "lon": 2.352222,
+    "speed": 8.5,
+    "ts": 1733318720000
+  },
+  "compact_packet_full": {
+    "v": "cf12ef34",
+    "vid": "cf12ef34",
+    "f": 55,
+    "fatigue": 55,
+    "r": 60,
+    "risk": 60,
+    "ts": 1733318780000
+  },
+  "compact_packet": {
+    "v": "ef56gh78",
+    "f": 85,
+    "r": 92
+  },
+  "high_risk": {
+    "vid": "12345678",
+    "fatigue": 95,
+    "risk": 88,
+    "battery_severity": "critical",
+    "max_cell_temp": 65.5,
+    "ble_neighbors": 1,
+    "lat": 37.7749,
+    "lon": -122.4194,
+    "speed": 22.22,
+    "ts": 1733318460000
+  },
+  "stale_packet": {
+    "vid": "stale001",
+    "fatigue": 20,
+    "risk": 15,
+    "battery_severity": "low",
+    "max_cell_temp": 28.0,
+    "ble_neighbors": 2,
+    "lat": 40.7128,
+    "lon": -74.0060,
+    "speed": 5.5,
+    "ts": 1700000000000
+  },
+  "malformed_packet": {
+    "fatigue": 50,
+    "risk": 30,
+    "ts": 1733318500000
+  }
+}
