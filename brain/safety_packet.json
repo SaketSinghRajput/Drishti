@@ -1,0 +1,14 @@
+{
+  "full_packet": {
+    "vid": "pi-sender-123",
+    "fatigue_pct": 65,
+    "risk_pct": 72.5,
+    "battery_severity": "medium",
+    "max_cell_temp": 38.5,
+    "ble_neighbors": 3,
+    "lat": 12.9716,
+    "lon": 77.5946,
+    "speed_m_s": 11.1,
+    "ts": 1733264000
+  }
+}
