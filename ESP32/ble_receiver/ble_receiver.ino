@@ -17,7 +17,7 @@
 #define CHAR_UUID "0000FFE1-0000-1000-8000-00805F9B34FB"
 #define TS_TOLERANCE_MS 10000UL
 #define BUFFER_SIZE 100
-#define SCAN_INTERVAL_S 5
+#define SCAN_INTERVAL_S 1 // Scan for only 1 second to allow incoming connections
 #define SUMMARY_INTERVAL_MS 5000UL
 
 // BLE security mode selector (compile-time):
@@ -182,6 +182,11 @@ void loop() {
     }
   }
   pBLEScan->clearResults();
+
+  // Allow some breathing room for advertising / incoming connections
+  // when running dual-mode (scanner + GATT server). A short delay helps
+  // the ESP32 accept and process incoming GATT connections from hosts.
+  delay(2000); // Wait 2 seconds between scans
 
   if (millis() - last_summary >= SUMMARY_INTERVAL_MS) {
     printSummary();
