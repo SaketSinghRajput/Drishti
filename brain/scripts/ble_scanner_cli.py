@@ -1,58 +1,95 @@
 #!/usr/bin/env python3
-"""
-Interactive BLE Scanner CLI using bleak.
 
-Scans nearby BLE devices with Bleak, displays a numbered list sorted by RSSI,
-allows the user to select one (1-9), and stores the selected MAC address to
-`brain/.selected_ble_target` for use in subsequent phases.
+from __future__ import annotations
 
-Default workflow (auto-send enabled): scan -> select device -> send 5 packets -> exit
+import argparse
+import asyncio
+import sys
+import time
+import os
+from typing import List, Optional
 
-Usage examples:
+try:
+    from bleak import BleakScanner, BleakClient
+    from bleak.backends.device import BLEDevice
+    from bleak.exc import BleakError
+except Exception:
+    BleakScanner = None  # type: ignore
+    BleakClient = None  # type: ignore
+    BLEDevice = None  # type: ignore
+    BleakError = Exception  # type: ignore
 
-    # Default: scan → select → send 5 packets
-    async def send_safety_packets_enhanced(
-        mac_address: str,
-        *,
-        num_packets: int = 5,
-        continuous: bool = False,
-        custom_json_path: Optional[str] = None,
-        verbose: bool = False,
-        retry_attempts: int = 3,
-        packet_interval: float = 2.0,
-    ) -> bool:
-        svc_uuid = "0000FFE0-0000-1000-8000-00805F9B34FB"
-        char_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"  # Nordic UART writable
+import json
+from datetime import datetime, timezone
 
-        packets = []
-        if custom_json_path:
-            packets = load_custom_packets(custom_json_path)
-        else:
-            for i in range(num_packets):
-                pkt = generate_fake_packet("drowsy" if i % 2 else "normal", i+1)
-                packets.append(pkt)
 
-        total_sent = 0
-        for attempt in range(retry_attempts):
-            try:
-                if verbose:
-                    print(f"Connecting to {mac_address} (attempt {attempt+1}/{retry_attempts})")
-                async with BleakClient(mac_address, timeout=10.0) as client:
-                    if not client.is_connected:
-                        raise RuntimeError("Connection lost")
+SELECTED_TARGET_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', '.selected_ble_target')
+SELECTED_TARGET_FILE = os.path.abspath(SELECTED_TARGET_FILE)
 
-                    # Skip discovery - use fixed Nordic UART char
-                    payload = json.dumps(packets[0] if packets else {}, separators=(',', ':')).encode()
-                    await client.write_gatt_char(char_uuid, payload)
-                    total_sent += 1
-                    print(f"✅ Sent packet to {mac_address}: {len(payload)} bytes")
-                    return True
-            except Exception as e:
-                print(f"Attempt {attempt+1} failed: {e}")
-                await asyncio.sleep(2 ** attempt)
 
-        print("Failed to send after retries")
-        return False
+async def scan_devices(scan_duration: float) -> List[BLEDevice]:
+    if BleakScanner is None:
+        raise RuntimeError("bleak not installed. Install with: pip install bleak")
+    print(f"Scanning for {scan_duration}s...")
+    try:
+        devices = await BleakScanner.discover(timeout=scan_duration)
+    except Exception as exc:
+        raise RuntimeError(f"BLE scan failed: {exc}")
+    return devices
+
+
+def display_devices(devices: List[BLEDevice]) -> List[BLEDevice]:
+    if not devices:
+        print("No BLE devices found.")
+        return []
+
+    def get_device_rssi(d: BLEDevice) -> Optional[int]:
+        # Try multiple locations for RSSI to support different bleak versions/platforms
+        try:
+            v = getattr(d, "rssi", None)
+            if v is not None:
+                return int(v)
+        except Exception:
+            pass
+        try:
+            meta = getattr(d, "metadata", None)
+            if isinstance(meta, dict) and "rssi" in meta and meta["rssi"] is not None:
+                return int(meta["rssi"])
+        except Exception:
+            pass
+        try:
+            ad = getattr(d, "advertisement_data", None)
+            if ad is not None and hasattr(ad, "rssi"):
+                return int(getattr(ad, "rssi"))
+        except Exception:
+            pass
+        try:
+            details = getattr(d, "details", None)
+            if isinstance(details, dict) and "rssi" in details and details["rssi"] is not None:
+                return int(details["rssi"])
+        except Exception:
+            pass
+        return None
+
+    devices_sorted = sorted(devices, key=lambda d: (get_device_rssi(d) if get_device_rssi(d) is not None else -9999), reverse=True)
+
+    print("\n=== Nearby BLE Devices ===")
+    for idx, dev in enumerate(devices_sorted, start=1):
+        name = dev.name if dev.name else "Unknown"
+        addr = dev.address
+        r = get_device_rssi(dev)
+        rssi = f"{r} dBm" if r is not None else "N/A"
+        print(f"[{idx}] {name} ({addr}) RSSI: {rssi}")
+    return devices_sorted
+
+
+def input_with_timeout(prompt: str, timeout: int) -> Optional[str]:
+    # Works on Unix (Raspberry Pi). Falls back to blocking input on other platforms.
+    if sys.platform != "linux":
+        try:
+            return input(prompt)
+        except KeyboardInterrupt:
+            return None
 
     import signal
 
