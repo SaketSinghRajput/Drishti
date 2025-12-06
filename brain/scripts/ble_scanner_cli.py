@@ -205,7 +205,7 @@ async def send_safety_packets_enhanced(
                     raise RuntimeError("Failed to connect")
                 if verbose:
                     print("Connected. Discovering services...")
-                svcs = await client.get_services()
+                svcs = client.services
                 if verbose:
                     print(f"Discovered {len(svcs)} services")
                 # check for characteristic
