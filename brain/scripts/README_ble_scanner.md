@@ -38,18 +38,29 @@ python brain/scripts/ble_scanner_cli.py --timeout 60
 
 ## Sending Safety Packets (GATT Mode)
 
-The scanner can optionally attempt to send test safety packets to the selected device using the `--send-packets` flag. This feature uses `bleak.BleakClient` to connect and write JSON payloads to the test write characteristic.
+The scanner will automatically send test safety packets to the selected device by default (auto-send). This uses `bleak.BleakClient` to connect and write JSON payloads to the test write characteristic.
 
-**Important**: The ESP32 must be running a GATT server and advertising the service/characteristic for this to succeed. The current ESP32 firmware is scanner-only; the GATT server will be implemented in a later phase.
+**Important**: The ESP32 must be running a GATT server and advertising the service/characteristic for this to succeed.
 
-Example:
+Auto-Send Behavior (Default)
+----------------------------
+
+By default, after you select a device the scanner will connect and send 5 test packets, then exit. To disable that behavior and perform scan-only operation, use `--no-auto-send`.
+
+Examples:
 
 ```bash
-# After selecting a device you can invoke sending mode directly:
+# Default: scan -> select -> auto-send 5 packets
+python brain/scripts/ble_scanner_cli.py
+
+# Disable auto-send (scan only)
+python brain/scripts/ble_scanner_cli.py --no-auto-send
+
+# Legacy flag still supported (equivalent to auto-send):
 python brain/scripts/ble_scanner_cli.py --send-packets
 ```
 
-The script will attempt to write 5 packets (normal, drowsy, high_risk, critical_battery, multi_neighbor) to characteristic `0000FFE1-0000-1000-8000-00805F9B34FB` under service `0000FFE0-0000-1000-8000-00805F9B34FB`.
+The script will attempt to write packets (normal, drowsy, high_risk, critical_battery, multi_neighbor) to characteristic `0000FFE1-0000-1000-8000-00805F9B34FB` under service `0000FFE0-0000-1000-8000-00805F9B34FB`.
 
 If the characteristic is not found or the device is not connectable, the script will print a helpful message and exit gracefully.
 
@@ -82,6 +93,13 @@ scanner and the non-interactive `test_ble_sender.py` script.
 - `--verbose`: print packet previews and connection details
 - `--retry-attempts N`: number of connection retries (default 3)
 - `--packet-interval S`: seconds between packets (default 2.0)
+
+Auto-Send Options
+-----------------
+
+- `--auto-send`: enable automatic sending after device selection (default enabled)
+- `--no-auto-send`: disable automatic sending after device selection (scan-only mode)
+- `--send-packets`: legacy flag to trigger sending after selection (kept for compatibility)
 
 Examples:
 

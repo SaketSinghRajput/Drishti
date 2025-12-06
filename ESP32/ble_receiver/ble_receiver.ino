@@ -20,6 +20,14 @@
 #define SCAN_INTERVAL_S 5
 #define SUMMARY_INTERVAL_MS 5000UL
 
+// BLE security mode selector (compile-time):
+// 0 = BLESecurity disabled (open access, rely on library defaults)
+// 1 = Minimal mode: setAuthenticationMode(ESP_LE_AUTH_NO_BOND), no init encryption keys
+// 2 = Original mode: setAuthenticationMode(ESP_LE_AUTH_NO_BOND) and setInitEncryptionKey(ENC|ID)
+#ifndef BLE_SECURITY_MODE
+#define BLE_SECURITY_MODE 1
+#endif
+
 struct SafetyPacket {
   String vid;
   int fatigue_pct;
@@ -43,6 +51,19 @@ unsigned long total_packets = 0;
 // GATT server globals
 BLEServer* pServer = nullptr;
 BLECharacteristic* pCharacteristic = nullptr;
+
+// Connection callback to log connect/disconnect and restart advertising
+class ServerConnectionCallbacks : public BLEServerCallbacks {
+  void onConnect(BLEServer* server) override {
+    Serial.println("[GATT] Client connected");
+  }
+  void onDisconnect(BLEServer* server) override {
+    Serial.println("[GATT] Client disconnected");
+    // restart advertising so the device remains discoverable
+    BLEDevice::getAdvertising()->start();
+    Serial.println("[GATT] Advertising restarted");
+  }
+};
 
 // Forward declarations
 void parseManufacturerData(BLEAdvertisedDevice device);
@@ -99,6 +120,31 @@ void setup() {
   // a remote client writes JSON to the characteristic, the callback will
   // parse and display the packet using existing helpers.
   pServer = BLEDevice::createServer();
+  // Register connection callbacks that log events and restart advertising
+  pServer->setCallbacks(new ServerConnectionCallbacks());
+
+  // Configure BLE security. Use compile-time mode to allow experimenting
+  // with reduced/disabled security to avoid pairing prompts on some hosts.
+  // Modes:
+  // 0 - BLESecurity disabled (open access)
+  // 1 - Minimal: no bonding, no init encryption keys
+  // 2 - Full (original): no bonding, init ENC|ID keys
+#if BLE_SECURITY_MODE == 0
+  Serial.println("[GATT] Security: BLESecurity disabled (open access)");
+#else
+  BLESecurity* pSecurity = new BLESecurity();
+  pSecurity->setAuthenticationMode(ESP_LE_AUTH_NO_BOND);
+  pSecurity->setCapability(ESP_IO_CAP_NONE);
+#if BLE_SECURITY_MODE == 1
+  // Minimal: avoid requesting init encryption keys to reduce pairing-like behavior
+  pSecurity->setInitEncryptionKey(0);
+  Serial.println("[GATT] Security: No bonding, minimal encryption mask (0)");
+#else
+  // Original behavior: set ENC | ID masks (may cause encryption negotiation)
+  pSecurity->setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
+  Serial.println("[GATT] Security: No bonding, encryption keys set (ENC|ID)");
+#endif
+#endif
   BLEService* pService = pServer->createService(PACKET_SERVICE_UUID);
   pCharacteristic = pService->createCharacteristic(
       CHAR_UUID,

@@ -6,6 +6,19 @@ Scans nearby BLE devices with Bleak, displays a numbered list sorted by RSSI,
 allows the user to select one (1-9), and stores the selected MAC address to
 `brain/.selected_ble_target` for use in subsequent phases.
 
+Default workflow (auto-send enabled): scan -> select device -> send 5 packets -> exit
+
+Usage examples:
+
+    # Default: scan → select → send 5 packets
+    python brain/scripts/ble_scanner_cli.py
+
+    # Disable auto-send (scan only)
+    python brain/scripts/ble_scanner_cli.py --no-auto-send
+
+    # Send 10 packets continuously
+    python brain/scripts/ble_scanner_cli.py --num-packets 10 --continuous
+
 Designed for Raspberry Pi / Linux with BlueZ. Defensive against missing
 `bleak` and adapter errors.
 """
@@ -141,7 +154,7 @@ def save_selected_mac(mac: str) -> None:
         print(f"Warning: failed to save selected MAC to file: {exc}")
 
 
-async def send_safety_packets(mac_address: str, num_packets: int = 5) -> None:
+async def send_safety_packets(mac_address: str, num_packets: int = 5) -> bool:
     """Connect to a device and write fake safety packets to the test characteristic.
 
     This function is defensive: if the device does not expose the expected
@@ -157,7 +170,7 @@ async def send_safety_packets(mac_address: str, num_packets: int = 5) -> None:
 
     # New enhanced sender: parameters will be handled by caller; this legacy signature
     # path delegates to the enhanced implementation below for backward compatibility.
-    await send_safety_packets_enhanced(
+    return await send_safety_packets_enhanced(
         mac_address,
         num_packets=num_packets,
         continuous=False,
@@ -177,11 +190,15 @@ async def send_safety_packets_enhanced(
     verbose: bool = False,
     retry_attempts: int = 3,
     packet_interval: float = 2.0,
-) -> None:
-    """Enhanced sender with retries, continuous mode, custom JSON and verbose output."""
+)-> bool:
+    """Enhanced sender with retries, continuous mode, custom JSON and verbose output.
+
+    Returns True when one or more packets were successfully written to the
+    target device's characteristic; returns False otherwise.
+    """
     if BleakClient is None:
         print("Error: bleak BleakClient not available. Install bleak with: pip install bleak")
-        return
+        return False
 
     svc_uuid = "0000FFE0-0000-1000-8000-00805F9B34FB"
     char_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"
@@ -193,7 +210,7 @@ async def send_safety_packets_enhanced(
             packets = load_custom_packets(custom_json_path)
         except Exception as exc:
             print(exc)
-            return
+            return False
     else:
         scenarios = ["normal", "drowsy", "high_risk", "critical_battery", "multi_neighbor"]
         for i in range(num_packets):
@@ -229,7 +246,7 @@ async def send_safety_packets_enhanced(
                             break
                 if char is None:
                     print(f"Characteristic {char_uuid} not found under service {svc_uuid}. Ensure ESP32 GATT server is implemented.")
-                    return
+                    return False
 
                 print(f"Starting to send {('continuous' if continuous else len(packets))} packets to {mac_address}...")
                 sent = 0
@@ -261,13 +278,14 @@ async def send_safety_packets_enhanced(
                     print("Interrupted by user; stopping send loop")
                 duration = time.time() - start_time
                 print(f"Finished sending. Sent: {total_sent}, Failed: {total_failed}, Duration: {duration:.1f}s")
-                return
+                return total_sent > 0
         except Exception as exc:
             attempt += 1
             backoff = 2 ** (attempt - 1)
             print(f"Connection attempt failed: {exc}. Retrying in {backoff}s...")
             time.sleep(backoff)
     print(f"Failed to connect after {retry_attempts} attempts")
+    return False
 
 
 def generate_fake_packet(scenario: str, packet_id: Optional[int] = None) -> dict:
@@ -407,7 +425,11 @@ def parse_args():
     p = argparse.ArgumentParser(description="Interactive BLE scanner CLI for Raspberry Pi (uses bleak)")
     p.add_argument("--scan-duration", type=float, default=10.0, help="Seconds to scan for BLE devices (default 10)")
     p.add_argument("--timeout", type=int, default=30, help="Seconds to wait for selection input before auto-selecting first device (default 30)")
-    p.add_argument("--send-packets", action="store_true", help="After selecting a device, attempt to send test safety packets via GATT")
+    p.add_argument("--send-packets", action="store_true", help="Send packets after selection (legacy flag, use --auto-send/--no-auto-send instead)")
+    # Auto-send controls: default enabled; use --no-auto-send to disable
+    p.add_argument("--auto-send", dest="auto_send", action="store_true", help="Automatically send packets after device selection (default: enabled)")
+    p.add_argument("--no-auto-send", dest="auto_send", action="store_false", help="Disable automatic packet sending after selection")
+    p.set_defaults(auto_send=True)
     p.add_argument("--num-packets", type=int, default=5, help="Number of packets to send (default 5)")
     p.add_argument("--continuous", action="store_true", help="Send packets continuously until interrupted")
     p.add_argument("--custom-json", type=str, default=None, help="Path to custom JSON file with packets (array or single object)")
@@ -442,15 +464,20 @@ def main():
         print("No device selected. Exiting.")
         sys.exit(0)
 
-    print(f"✅ Selected: {chosen.name or 'Unknown'} ({chosen.address})")
+    selected_msg = f"✅ Selected: {chosen.name or 'Unknown'} ({chosen.address})"
+    if args.auto_send or args.send_packets:
+        selected_msg += " → Auto-sending packets..."
+    print(selected_msg)
     save_selected_mac(chosen.address)
-    if args.send_packets:
+    if args.auto_send or args.send_packets:
         # Attempt to send test packets to the selected device. This will fail
         # gracefully if the device does not expose the expected GATT server
         # / characteristic (ESP32 GATT server is implemented in a future phase).
         if BleakClient is None:
             print("Cannot send packets: BleakClient is not available. Install bleak with: pip install bleak")
             return
+        if args.auto_send or args.verbose:
+            print(f"\n📡 Sending {args.num_packets} packet(s) to {chosen.address}...")
         try:
             # Forward CLI options to the enhanced sender so user selections are respected.
             asyncio.run(

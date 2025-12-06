@@ -95,6 +95,46 @@ Behavior:
 
 This dual-mode setup enables end-to-end testing: the Raspberry Pi can scan, select `node-1`, connect, and write safety packets which will be printed on the ESP32 Serial CLI.
 
+## Security Configuration
+
+For developer convenience the ESP32 is configured to accept connections without requiring pairing/bonding. This is useful for rapid testing with the Raspberry Pi sender but is NOT recommended for production.
+
+- Authentication mode: `ESP_LE_AUTH_NO_BOND` (no bonding/pairing)
+- I/O capability: `ESP_IO_CAP_NONE` (no passkey/PIN) 
+- Encryption keys: standard init encryption and ID keys (`ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK`)
+
+Behavior:
+- Clients (for example, the Raspberry Pi `bleak` client) can connect and write to the GATT characteristic without running `bluetoothctl pair` first.
+- For production use, remove or change these settings and require bonding/MITM as appropriate.
+
+On boot the ESP32 prints a status line indicating the security configuration:
+
+```
+[GATT] Security: No bonding, open connections
+```
+
+If you see this line on Serial Monitor, the device is accepting pairing-free connections.
+
+BLE Security Modes
+------------------
+
+You can control how the ESP32 configures BLE security at compile time by setting
+the `BLE_SECURITY_MODE` macro in `ble_receiver.ino` (default: `1`). Modes:
+
+- `0` = `BLESecurity` disabled (open access). No explicit security setup is performed.
+- `1` = Minimal: `ESP_LE_AUTH_NO_BOND`, `ESP_IO_CAP_NONE`, and *no* init encryption keys. Recommended first choice when testing with various BlueZ/bleak stacks.
+- `2` = Full (original): `ESP_LE_AUTH_NO_BOND`, `ESP_IO_CAP_NONE`, and `setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK)`. This may trigger encryption negotiation on some hosts.
+
+To change the mode, edit the top of `ble_receiver.ino`:
+
+```cpp
+// #define BLE_SECURITY_MODE 0  // no BLESecurity
+#define BLE_SECURITY_MODE 1    // minimal (default)
+// #define BLE_SECURITY_MODE 2  // original encryption mask
+```
+
+If you experience pairing prompts or connection failures, try mode `1` first, then `0` if problems persist. Rebuild and upload after changing the macro.
+
 ## Expected Serial Output
 
 ```
@@ -145,6 +185,28 @@ python brain/scripts/ble_scanner_cli.py --send-packets --num-packets 5 --packet-
 4. On the ESP32 Serial Monitor you should see one `[GATT] Server started, advertising as 'node-1'` line followed by `[EV-PACKET]` lines for each received packet.
 
 If the Pi cannot find `node-1`, use `sudo hcitool lescan` or nRF Connect to verify the ESP32 is advertising.
+
+Note: With the default test configuration the ESP32 does not require pairing. You should be able to connect from the Pi without `bluetoothctl pair`.
+
+## End-to-End Integration Testing
+
+The repository includes a small automated integration script that scans for `node-1`, auto-selects it (or falls back to the first discovered device), and attempts to send 10 test safety packets to the ESP32 GATT server. This script is intended to verify the full flow quickly from the Raspberry Pi to the ESP32.
+
+Run the integration test on the Raspberry Pi (with `bleak` installed):
+
+```powershell
+python brain/scripts/test_ble_integration.py
+```
+
+Expected flow: Run on Pi → Check ESP32 Serial for `[EV-PACKET]` output. The script will scan (~15s), connect to `node-1`, and write 10 packets. On the ESP32 Serial Monitor you should observe a `[GATT] Client connected` line followed by 10 `[EV-PACKET]` lines. If the script cannot find the writable characteristic or fails to send packets it will print a clear message — in that case verify the ESP32 is running the GATT server (service `0000FFE0`, characteristic `0000FFE1`) and that `BLE_SECURITY_MODE` allows the Pi to connect.
+
+Quick connection-only test (no writes):
+
+```powershell
+python -c "import asyncio; from bleak import BleakClient; asyncio.run(BleakClient('MAC').connect())"
+```
+
+Replace `MAC` with the target device MAC. A successful connect will return without an exception. If pairing is still required, verify the ESP32 Serial Monitor shows the security line above and restart both devices.
 
 ### DEBUG Mode (raw hex + parsed JSON)
 
