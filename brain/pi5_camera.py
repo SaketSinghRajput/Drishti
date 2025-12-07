@@ -1,14 +1,15 @@
 import time
-from picamera2 import Picamera2, Picamera2Config
+from picamera2 import Picamera2
 import cv2
 import numpy as np
 
-
 class Pi5Camera:
     def __init__(self):
-        # Configure the camera for 640x480 @ 30fps
+        print("📷 Initializing PiCamera2...")
         self.picam2 = Picamera2()
-        config = self.picam2.create_configuration(
+        
+        # CORRECTED METHOD: Use create_video_configuration
+        config = self.picam2.create_video_configuration(
             main={"size": (640, 480), "format": "BGR888"}
         )
         self.picam2.configure(config)
@@ -16,9 +17,8 @@ class Pi5Camera:
         print("✅ PiCamera2 Started Successfully")
 
     def read(self):
-        # Capture a single frame as an array (OpenCV format)
         try:
-            # wait for a frame (timeout 1 sec)
+            # Capture a single frame as an array (OpenCV format)
             frame = self.picam2.capture_array()
             return True, frame
         except Exception as e:
@@ -27,3 +27,4 @@ class Pi5Camera:
 
     def release(self):
         self.picam2.stop()
+        self.picam2.close()
