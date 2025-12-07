@@ -89,8 +89,33 @@ def main():
                     pass
         cfg._data["sensors"]["driver_fatigue"]["camera_device_id"] = cam_val
 
+    # --- INSERT THIS BLOCK ---
+    if args.camera == "pi5":
+        print("📷 Using Native Pi5 Camera Mode...")
+        sys.path.append("/home/pi/vishwakarma/brain")
+        from pi5_camera import Pi5Camera
+        # We cheat and attach our custom camera to the handler manually later
+        custom_cam = Pi5Camera()
+    else:
+        custom_cam = None
+    # -------------------------
+
     # Handler accepts either a dict or a ConfigLoader; pass underlying dict for clarity
     handler = DriverFatigueHandler(cfg._data if hasattr(cfg, "_data") else cfg)
+
+    # --- INSERT THIS BLOCK ---
+    if custom_cam:
+        # Force the handler to use our custom camera instead of OpenCV
+        # This overrides the internal self._camera of the handler
+        class FakeCamInterface:
+            def __init__(self, source): self.source = source
+            def read(self): return source.read()
+            def release(self): source.release()
+
+        # We manually inject our camera into the handler's private attribute
+        # (This depends on your handler's structure, but usually works)
+        handler._camera = FakeCamInterface(custom_cam)
+    # -------------------------
     # load window schema for validation (optional)
     schema_path = Path(__file__).resolve().parents[2] / "config" / "schema" / "sensor_window_schema.json"
     schema = None
