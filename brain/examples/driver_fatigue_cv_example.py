@@ -108,9 +108,17 @@ def main():
         # Force the handler to use our custom camera instead of OpenCV
         # This overrides the internal self._camera of the handler
         class FakeCamInterface:
-            def __init__(self, source): self.source = source
-            def read(self): return source.read()
-            def release(self): source.release()
+            def __init__(self, source): 
+                self.source = source
+            
+            def read_frame(self): 
+                # Call our Pi5 camera
+                ret, frame = self.source.read()
+                # The handler expects just the image frame, not the (True, Frame) tuple
+                return frame
+                
+            def release(self): 
+                self.source.release()
 
         # We manually inject our camera into the handler's private attribute
         # (This depends on your handler's structure, but usually works)
