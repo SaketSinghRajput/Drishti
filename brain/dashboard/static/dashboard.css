@@ -14,3 +14,79 @@ body{background:var(--bg-primary);color:var(--text-primary);}
 .modal-content { background: #141414; }
 .btn-outline-primary { color: var(--text-primary); border-color: #4a7; }
 
+/* Fatigue section */
+#fatigueGauge { max-height: 200px; }
+#fatigueState {
+  transition: all 0.3s ease-in-out;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.bg-orange { background-color: #ff9800 !important; }
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Smooth transitions for all metric updates */
+#headPitch, #headYaw, #headRoll {
+  transition: color 0.3s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #fatigueGauge { height: 150px; }
+  .h3 { font-size: 1.5rem; }
+}
+
+/* BLE Communication section */
+#bleConnectionStatus {
+  transition: all 0.3s ease-in-out;
+  animation: pulse 2s infinite;
+}
+
+#bleNeighborsCount {
+  font-weight: 700;
+  transition: color 0.3s ease-in-out;
+}
+
+#bleSelectedDevice, #bleSelectedMAC {
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+#blePacketHistory {
+  scrollbar-width: thin;
+  scrollbar-color: #4a7 #2a2a2a;
+}
+
+#blePacketHistory::-webkit-scrollbar {
+  width: 6px;
+}
+
+#blePacketHistory::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+
+#blePacketHistory::-webkit-scrollbar-thumb {
+  background: #4a7;
+  border-radius: 3px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive BLE section */
+@media (max-width: 768px) {
+  #bleNeighborsChart { height: 150px; }
+  #blePacketStatsGauge { height: 120px; }
+  #blePacketHistory { max-height: 180px; }
+}

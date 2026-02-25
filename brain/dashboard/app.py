@@ -1,13 +1,29 @@
 import os
+import sys
 import json
 import logging
-from flask import Flask, jsonify, request, render_template, send_from_directory
+from flask import Flask, jsonify, request, render_template, send_from_directory, Response
 from flask_cors import CORS
 from typing import Optional
 
-from .state import DashboardState
-from .annotations_db import AnnotationsDB
-from .analytics import AnalyticsEngine
+# Support running as a module (python -m dashboard.app) and as a script
+# (python dashboard/app.py) by setting up imports conditionally. We prefer
+# absolute imports to avoid the runtime warning seen when __package__ is empty.
+if __package__ in (None, ""):
+    # Add repository root so `dashboard` absolute imports resolve
+    _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    if _ROOT not in sys.path:
+        sys.path.insert(0, _ROOT)
+    # Ensure __package__ is set so relative imports inside this module work
+    __package__ = "dashboard"
+
+    from dashboard.state import DashboardState
+    from dashboard.annotations_db import AnnotationsDB
+    from dashboard.analytics import AnalyticsEngine
+else:
+    from dashboard.state import DashboardState
+    from .annotations_db import AnnotationsDB
+    from .analytics import AnalyticsEngine
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +66,227 @@ def create_app(config: dict = None, telemetry_collector=None, explanation_logger
     @app.route("/api/realtime/sensor_health")
     def sensor_health():
         return jsonify(state.get_sensor_health())
+
+    """
+    GET /api/fatigue
+    Returns latest driver fatigue detection metrics.
+
+    Response:
+    {
+      "drowsiness_score": float (0.0-1.0),
+      "fatigue_state": str (NORMAL|TIRED|DROWSY|MICROSLEEP),
+      "blink_rate": float (blinks/min),
+      "perclos": float (0.0-1.0),
+      "head_pose": {"pitch": float, "yaw": float, "roll": float, "confidence": float},
+      "timestamp": float (unix epoch)
+    }
+
+    GET /api/fatigue/stream
+    Server-Sent Events stream for real-time fatigue updates.
+    Content-Type: text/event-stream
+    Updates pushed at ~2Hz when new data available.
+
+    GET /api/fatigue/history?limit=50
+    Returns recent fatigue history for charting.
+    """
+
+    @app.route("/api/fatigue")
+    def fatigue_metrics():
+        """Return latest fatigue detection metrics."""
+        latest = state.get_latest_fatigue()
+        if latest is None:
+            return jsonify({
+                "drowsiness_score": 0.0,
+                "fatigue_state": "UNKNOWN",
+                "blink_rate": 0.0,
+                "perclos": 0.0,
+                "yawning_count": 0,
+                "head_pose": {"pitch": 0.0, "yaw": 0.0, "roll": 0.0, "confidence": 0.0},
+                "timestamp": None
+            })
+        return jsonify(latest)
+
+    @app.route("/api/fatigue/stream")
+    def fatigue_stream():
+        """Server-Sent Events stream for real-time fatigue updates."""
+        import time as _time
+
+        def generate():
+            last_timestamp = None
+            idle_ticks = 0
+            while True:
+                fatigue = state.get_latest_fatigue()
+                if fatigue and fatigue.get('timestamp') != last_timestamp:
+                    last_timestamp = fatigue.get('timestamp')
+                    idle_ticks = 0
+                    yield f"data: {json.dumps(fatigue)}\n\n"
+                else:
+                    idle_ticks += 1
+                    if idle_ticks >= 4:  # send heartbeat every ~2s
+                        idle_ticks = 0
+                        yield ":\n\n"
+                _time.sleep(0.5)
+
+        headers = {
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Content-Type": "text/event-stream",
+        }
+        return Response(generate(), headers=headers)
+
+    @app.route("/api/fatigue/history")
+    def fatigue_history():
+        """Return recent fatigue history for charting."""
+        raw_limit = request.args.get("limit", 50)
+        try:
+            limit_val = int(raw_limit)
+        except Exception:
+            limit_val = 50
+        if limit_val < 1:
+            limit_val = 50
+        if limit_val > 100:
+            limit_val = 100
+        history = state.get_fatigue_history(limit=limit_val)
+        return jsonify(history)
+
+    """
+    GET /api/ble
+    Returns latest BLE mesh status and communication metrics.
+
+    Response:
+    {
+      "neighbors_count": int,
+      "selected_device_mac": str or null,
+      "selected_device_name": str or null,
+      "last_packet_sent": {...} or null,
+      "last_packet_received": {...} or null,
+      "packet_stats": {
+        "total_sent": int,
+        "total_received": int,
+        "failed_sends": int
+      },
+      "neighbors": [{"id_hash": str, "rssi": float, "dist_m": float, ...}],
+      "timestamp": float (unix epoch)
+    }
+
+    GET /api/ble/stream
+    Server-Sent Events stream for real-time BLE updates.
+    Content-Type: text/event-stream
+    Updates pushed at ~2Hz when new data available.
+
+    GET /api/ble/history?limit=50
+    Returns recent BLE status history for charting.
+    """
+
+    @app.route("/api/ble")
+    def ble_status():
+        """Return latest BLE mesh status and communication metrics."""
+        try:
+            latest = state.get_latest_ble()
+            if latest is None:
+                latest = {
+                    "neighbors_count": 0,
+                    "selected_device_mac": None,
+                    "selected_device_name": None,
+                    "last_packet_sent": None,
+                    "last_packet_received": None,
+                    "packet_stats": {"total_sent": 0, "total_received": 0, "failed_sends": 0},
+                    "neighbors": [],
+                    "timestamp": None,
+                }
+            return jsonify(latest)
+        except Exception:
+            logger.exception("Failed to serve BLE status")
+            return jsonify({"error": "failed to read BLE status"}), 500
+
+    @app.route("/api/ble/stream")
+    def ble_stream():
+        """Server-Sent Events stream for real-time BLE updates."""
+        import time as _time
+
+        def generate():
+            last_timestamp = None
+            idle_ticks = 0
+            while True:
+                ble_data = state.get_latest_ble()
+                if ble_data and ble_data.get("timestamp") != last_timestamp:
+                    last_timestamp = ble_data.get("timestamp")
+                    idle_ticks = 0
+                    yield f"data: {json.dumps(ble_data)}\n\n"
+                else:
+                    idle_ticks += 1
+                    if idle_ticks >= 4:  # send heartbeat every ~2s
+                        idle_ticks = 0
+                        yield ":\n\n"
+                _time.sleep(0.5)
+
+        headers = {
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Content-Type": "text/event-stream",
+        }
+        return Response(generate(), headers=headers)
+
+    @app.route("/api/ble/history")
+    def ble_history():
+        """Return recent BLE status history for charting."""
+        raw_limit = request.args.get("limit", 50)
+        try:
+            limit_val = int(raw_limit)
+        except Exception:
+            limit_val = 50
+        if limit_val < 1:
+            limit_val = 50
+        if limit_val > 100:
+            limit_val = 100
+        try:
+            history = state.get_ble_history(limit=limit_val)
+            return jsonify(history)
+        except Exception:
+            logger.exception("Failed to serve BLE history")
+            return jsonify({"error": "failed to read BLE history"}), 500
+    @app.route("/api/ble/send_test", methods=["POST"])
+    def ble_send_test():
+        """Trigger sending test packet to selected BLE device.
+
+        Request body:
+        {
+          "num_packets": int (default 1)
+        }
+
+        Note: Actual sending is handled by orchestrator when integrated.
+        This endpoint updates state to signal orchestrator to send.
+        """
+        try:
+            body = request.get_json() or {}
+            num_packets = body.get("num_packets", 1)
+
+            # Read selected MAC from file (coordination with ble_scanner_cli.py)
+            selected_mac = None
+            target_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', '.selected_ble_target')
+            target_file = os.path.abspath(target_file)
+            if os.path.exists(target_file):
+                with open(target_file, 'r', encoding='utf-8') as f:
+                    selected_mac = f.read().strip()
+
+            if not selected_mac:
+                return jsonify({"error": "No device selected. Run ble_scanner_cli.py first."}), 400
+
+            # Signal orchestrator via state (orchestrator will poll this flag)
+            # For now, just return success; full integration in next phase
+            logger.info(f"Test packet send requested for {selected_mac} (x{num_packets})")
+
+            return jsonify({
+                "status": "queued",
+                "target_mac": selected_mac,
+                "num_packets": num_packets,
+                "message": "Packet send queued. Orchestrator will process."
+            }), 200
+
+        except Exception as e:
+            logger.exception("Failed to queue test packet")
+            return jsonify({"error": str(e)}), 500
+
 
     @app.route('/api/hardware_health', methods=['POST'])
     def hardware_health():
@@ -227,3 +464,10 @@ def create_app(config: dict = None, telemetry_collector=None, explanation_logger
     app.analytics_engine = analytics
 
     return app
+
+
+if __name__ == "__main__":
+    # Simple dev server entrypoint; production should use gunicorn/uwsgi
+    cfg = {}
+    app = create_app(cfg)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)

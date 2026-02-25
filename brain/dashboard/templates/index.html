@@ -41,6 +41,44 @@
             </div>
           </div>
           <div class="row mt-3">
+            <div class="col-md-4">
+              <div class="card p-3">
+                <h5>Driver Fatigue</h5>
+                <canvas id="fatigueGauge" height="200"></canvas>
+                <div class="text-center mt-2">
+                  <span id="fatigueState" class="badge bg-success fs-5">NORMAL</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="card p-3">
+                <h5>Fatigue Metrics (Last 60s)</h5>
+                <canvas id="fatigueMetricsChart" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-md-12">
+              <div class="card p-3">
+                <h5>Head Pose</h5>
+                <div class="row text-center">
+                  <div class="col-4">
+                    <div class="metric-label">Pitch</div>
+                    <div id="headPitch" class="h3">0.0°</div>
+                  </div>
+                  <div class="col-4">
+                    <div class="metric-label">Yaw</div>
+                    <div id="headYaw" class="h3">0.0°</div>
+                  </div>
+                  <div class="col-4">
+                    <div class="metric-label">Roll</div>
+                    <div id="headRoll" class="h3">0.0°</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-3">
             <div class="col-md-12">
               <div class="card p-3">
                 <h5>Recent Alerts</h5>
@@ -48,6 +86,63 @@
               </div>
             </div>
           </div>
+                  <!-- BLE Communication Section -->
+                  <div class="row mt-3">
+                    <div class="col-md-4">
+                      <div class="card p-3">
+                        <h5>BLE Mesh Status</h5>
+                        <div class="text-center">
+                          <div id="bleConnectionStatus" class="badge bg-secondary fs-6 mb-2">DISCONNECTED</div>
+                          <div class="metric-label">Neighbors Count</div>
+                          <div id="bleNeighborsCount" class="h2">0</div>
+                        </div>
+                        <hr/>
+                        <div class="metric-label">Selected Device</div>
+                        <div id="bleSelectedDevice" class="text-muted small">None</div>
+                        <div id="bleSelectedMAC" class="text-muted small">-</div>
+                        <button id="bleSendTestBtn" class="btn btn-primary btn-sm mt-2 w-100">Send Test Packet</button>
+                      </div>
+                    </div>
+                    <div class="col-md-8">
+                      <div class="card p-3">
+                        <h5>BLE Neighbors (Last 60s)</h5>
+                        <canvas id="bleNeighborsChart" height="200"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row mt-3">
+                    <div class="col-md-6">
+                      <div class="card p-3">
+                        <h5>Packet Statistics</h5>
+                        <canvas id="blePacketStatsGauge" height="180"></canvas>
+                        <div class="row text-center mt-2">
+                          <div class="col-4">
+                            <div class="metric-label">Sent</div>
+                            <div id="blePacketsSent" class="h5">0</div>
+                          </div>
+                          <div class="col-4">
+                            <div class="metric-label">Received</div>
+                            <div id="blePacketsReceived" class="h5">0</div>
+                          </div>
+                          <div class="col-4">
+                            <div class="metric-label">Failed</div>
+                            <div id="blePacketsFailed" class="h5 text-danger">0</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card p-3">
+                        <h5>Recent Packets</h5>
+                        <div id="blePacketHistory" class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                          <table class="table table-sm table-dark">
+                            <thead><tr><th>Time</th><th>Type</th><th>VID</th><th>Fatigue</th><th>Risk</th></tr></thead>
+                            <tbody id="blePacketHistoryBody"></tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
         </div>
 
         <div class="tab-pane fade" id="incidents" role="tabpanel">

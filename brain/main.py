@@ -16,6 +16,7 @@ import sys
 import threading
 import time
 import traceback
+import os
 from typing import Any, Dict, Optional
 
 # Defensive imports for optional subsystems
@@ -156,6 +157,8 @@ except Exception:
 
 
 _running = True
+_ble_packet_stats = {"total_sent": 0, "total_received": 0, "failed_sends": 0}
+_last_safety_packet = None
 
 
 def _signal_handler(sig, frame):
@@ -184,7 +187,24 @@ def build_safety_packet(vehicle_hash: str, fatigue_pct: int, risk_pct: int, batt
     }
 
 
+SELECTED_TARGET_FILE = os.path.expanduser("~/.selected_ble_target")
+
+
+def read_selected_ble_device() -> Dict[str, Optional[str]]:
+    """Read selected BLE device identifier from scanner CLI marker file."""
+    try:
+        if os.path.exists(SELECTED_TARGET_FILE):
+            with open(SELECTED_TARGET_FILE, "r", encoding="utf-8") as fh:
+                mac = fh.readline().strip()
+                if mac:
+                    return {"mac": mac, "name": None}
+    except Exception:
+        pass
+    return {"mac": None, "name": None}
+
+
 def main():
+    global _ble_packet_stats, _last_safety_packet
     parser = argparse.ArgumentParser(description="Run the EV Safety Guardian orchestrator")
     parser.add_argument("--config", default="config/default_config.yaml")
     parser.add_argument("--mode", choices=("dev", "prod"), default="dev")
@@ -327,6 +347,54 @@ def main():
                 features = window.get('features', {}) if isinstance(window, dict) else {}
                 sensors = window.get('sensors', {}) if isinstance(window, dict) else {}
 
+                # Read fatigue sensor and push to dashboard state if available
+                fatigue_data = None
+                try:
+                    if 'fatigue_handler' in globals() and globals().get('fatigue_handler') is not None:
+                        fatigue_data = globals().get('fatigue_handler').read()
+                except Exception:
+                    fatigue_data = None
+                if fatigue_data and dashboard_state:
+                    try:
+                        dashboard_state.update_fatigue_metrics(fatigue_data)
+                    except Exception:
+                        try:
+                            import traceback as _tb
+                            _tb.print_exc()
+                        except Exception:
+                            pass
+
+                # BLE mesh status -> dashboard
+                try:
+                    ble_mesh_data = sensors.get('ble_mesh', {}) if isinstance(sensors, dict) else {}
+                    neighbors = ble_mesh_data.get('neighbors', []) if isinstance(ble_mesh_data.get('neighbors', []), list) else []
+                    selected = read_selected_ble_device()
+                    ble_status = {
+                        "neighbors_count": len(neighbors),
+                        "neighbors": neighbors,
+                        "selected_device_mac": selected.get("mac"),
+                        "selected_device_name": selected.get("name"),
+                        "last_packet_sent": _last_safety_packet.copy() if isinstance(_last_safety_packet, dict) else _last_safety_packet,
+                        "last_packet_received": None,
+                        "packet_stats": _ble_packet_stats.copy(),
+                        "timestamp": time.time(),
+                    }
+                    if dashboard_state:
+                        try:
+                            dashboard_state.update_ble_status(ble_status)
+                        except Exception:
+                            try:
+                                import traceback as _tb
+                                _tb.print_exc()
+                            except Exception:
+                                pass
+                except Exception:
+                    try:
+                        import traceback as _tb
+                        _tb.print_exc()
+                    except Exception:
+                        pass
+
                 # Example: fatigue percentage from features
                 fatigue_pct = int(features.get('fatigue_pct', -999)) if isinstance(features.get('fatigue_pct', None), (int, float)) else -999
 
@@ -376,7 +444,10 @@ def main():
                 packet = build_safety_packet(vhash, fatigue_pct, int(risk_score * 100), battery_sev, max_temp, ble_neighbors, lat, lon, speed)
                 try:
                     broadcast_safety_packet(vhash, packet, cfg)
+                    _ble_packet_stats["total_sent"] = _ble_packet_stats.get("total_sent", 0) + 1
+                    _last_safety_packet = packet.copy()
                 except Exception:
+                    _ble_packet_stats["failed_sends"] = _ble_packet_stats.get("failed_sends", 0) + 1
                     print("Warning: broadcast failed")
 
                 # Dashboard update (best-effort) using app.dashboard_state
